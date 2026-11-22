@@ -1762,7 +1762,12 @@ async function sync(force) {
   finally { syncing = false; CACHE.loaded[h] = true; }
   if (first || force || before !== JSON.stringify([CACHE.parties, CACHE.invites])) render();
 }
-window.addEventListener("hashchange", () => { if (narrow() && sideOpen) toggleSide(false); render(); sync(); });
+window.addEventListener("hashchange", () => {
+  if (narrow() && sideOpen) toggleSide(false);
+  render();
+  if (!(ui.toCodes && Date.now() - ui.toCodes < 1500)) window.scrollTo(0, 0);   // 화면이 바뀌면 맨 위에서 시작한다('코드로 파티 열기'로 온 경우만 예외)
+  sync();
+});
 // 호스트 화면은 10초마다 새 카드를 받아 온다(무언가 입력하는 중이면 건너뜀)
 setInterval(() => {
   if (!REMOTE || ui.busy || document.hidden || !/^#\/host\//.test(location.hash)) return;
