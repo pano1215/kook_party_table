@@ -1,16 +1,68 @@
-// 쿸 서버 공통: 저장소(Upstash Redis REST) + 도우미
-// 환경변수가 없으면 메모리에 저장한다(로컬 시험용, 서버를 다시 켜면 사라짐)
+// 모꾸 서버 공통: 저장소 + 도우미
+// 저장소는 Supabase(Postgres)를 먼저 쓰고, 없으면 Upstash Redis, 둘 다 없으면 메모리(로컬 시험용, 서버를 다시 켜면 사라짐)
 const crypto = require("crypto");
+const SUPA_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
+const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";   // 서버 전용 키(브라우저로 나가지 않는다)
+const SUPA = !!(SUPA_URL && SUPA_KEY);
 const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "";
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
 const mem = global.__kookMem || (global.__kookMem = new Map());
 
 async function cmd(...args) {
+  if (SUPA) return supaCmd(args);
   if (!URL_) return memCmd(args);
   const r = await fetch(URL_, { method: "POST", headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" }, body: JSON.stringify(args) });
   const j = await r.json();
   if (j.error) throw new Error(j.error);
   return j.result;
+}
+// ---- Supabase: Redis 명령 몇 가지를 표 두 개(kv, lists)로 옮긴다. 표는 supabase.sql 로 만든다
+async function supa(path, { method = "GET", body, prefer } = {}) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/${path}`, { method, headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, "Content-Type": "application/json", ...(prefer ? { Prefer: prefer } : {}) }, body: body === undefined ? undefined : JSON.stringify(body) });
+  const t = await r.text();
+  if (!r.ok) throw new Error(`supabase ${r.status}: ${t.slice(0, 200)}`);
+  return t ? JSON.parse(t) : null;
+}
+const kq = (k) => `kv?key=eq.${encodeURIComponent(k)}`;
+const alive = (row) => !row.expires_at || Date.parse(row.expires_at) > Date.now();
+async function supaCmd([c, k, ...a]) {
+  c = c.toUpperCase();
+  if (c === "GET" || c === "EXISTS") {
+    const rows = await supa(`${kq(k)}&select=value,expires_at`);
+    const row = rows && rows[0];
+    if (row && !alive(row)) { await supa(kq(k), { method: "DELETE" }); return c === "GET" ? null : 0; }   // 기한이 지난 값은 읽을 때 지운다
+    return c === "GET" ? (row ? row.value : null) : row ? 1 : 0;
+  }
+  if (c === "SET") {
+    const opt = a.slice(1).map((x) => String(x).toUpperCase());
+    let exp = null;
+    if (opt.includes("EX")) exp = new Date(Date.now() + +a[1 + opt.indexOf("EX") + 1] * 1000).toISOString();
+    if (opt.includes("EXAT")) exp = new Date(+a[1 + opt.indexOf("EXAT") + 1] * 1000).toISOString();
+    const row = { key: k, value: String(a[0]), expires_at: exp };
+    if (opt.includes("NX")) {
+      await supa(`${kq(k)}&expires_at=lt.${encodeURIComponent(new Date().toISOString())}`, { method: "DELETE" });   // 기한 지난 자리는 비운다
+      const made = await supa("kv?on_conflict=key", { method: "POST", body: row, prefer: "resolution=ignore-duplicates,return=representation" });
+      return made && made.length ? "OK" : null;
+    }
+    await supa("kv?on_conflict=key", { method: "POST", body: row, prefer: "resolution=merge-duplicates,return=minimal" });
+    return "OK";
+  }
+  if (c === "DEL") { const gone = await supa(kq(k), { method: "DELETE", prefer: "return=representation" }); return gone ? gone.length : 0; }
+  if (c === "INCR") return supa("rpc/kv_incr", { method: "POST", body: { k } });
+  if (c === "EXPIRE") { await supa(kq(k), { method: "PATCH", body: { expires_at: new Date(Date.now() + +a[0] * 1000).toISOString() }, prefer: "return=minimal" }); return 1; }
+  if (c === "EXPIREAT") { await supa(kq(k), { method: "PATCH", body: { expires_at: new Date(+a[0] * 1000).toISOString() }, prefer: "return=minimal" }); return 1; }
+  if (c === "LPUSH") { await supa("lists", { method: "POST", body: a.map((v) => ({ name: k, value: String(v) })), prefer: "return=minimal" }); return a.length; }
+  if (c === "LTRIM") { await supa("rpc/list_trim", { method: "POST", body: { n: k, keep: +a[1] + 1 } }); return "OK"; }
+  if (c === "LRANGE") {   // 최신 것부터. 한 번에 1000줄씩 받아 온다
+    const want = +a[1] === -1 ? Infinity : +a[1] + 1, out = [];
+    for (let off = +a[0] || 0; out.length < want; off += 1000) {
+      const rows = await supa(`lists?name=eq.${encodeURIComponent(k)}&select=value&order=id.desc&limit=${Math.min(1000, want - out.length)}&offset=${off}`);
+      out.push(...rows.map((r) => r.value));
+      if (rows.length < 1000) break;
+    }
+    return out;
+  }
+  throw new Error("unsupported " + c);
 }
 function memCmd([c, k, ...a]) {
   c = c.toUpperCase();
@@ -96,4 +148,4 @@ async function logEvent(req, ev, { ch, role, party, kind } = {}) {
     await cmd("LTRIM", "events", "0", "49999");
   } catch {}   // 기록이 실패해도 본래 요청은 성공시킨다
 }
-module.exports = { cmd, sha256, rand, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: !!URL_, arr, normChannel, visitor, logEvent };
+module.exports = { cmd, sha256, rand, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: SUPA || !!URL_, storageKind: SUPA ? "supabase" : URL_ ? "upstash" : "memory", arr, normChannel, visitor, logEvent };
