@@ -2104,6 +2104,11 @@ function openShare(p, copied, hostCodeOnce) {
   el.querySelector("#shInsta").onclick = async () => {
     countShare(p, "instagram");
     const ok = await copyText(url);
+    // 휴대폰: 브라우저는 인스타그램 앱의 로그인을 모르기 때문에 웹 주소를 열면 로그인 화면이 뜬다. 기기의 공유 창에서 인스타그램 앱을 고르게 한다
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && navigator.share) {
+      try { await navigator.share({ title: p.name, text: msg, url }); say("공유 창에서 인스타그램을 골라 보내 주세요."); return; }
+      catch (e) { if (e && e.name === "AbortError") { say(ok ? "링크는 복사해 뒀어요. 인스타그램 메시지에 붙여 넣어도 돼요." : ""); return; } }
+    }
     window.open("https://www.instagram.com/direct/inbox/", "_blank", "noopener");
     say(ok ? "링크를 복사하고 인스타그램 메시지를 열었어요. 대화방에 붙여 넣어 보내 주세요." : "인스타그램 메시지를 열었어요. 위 링크를 복사해 붙여 넣어 주세요.");
   };
@@ -2245,11 +2250,14 @@ function prepTab(p, agg) {
   html += shop.groceries.length ? `<div class="apps" style="margin:0 0 8px">${soon("groceries", "재료 한 번에 주문")}</div><ul class="list">${shop.groceries.map((g) => `<li><label class="check" style="margin:0"><input type="checkbox"><span><b>${esc(g.name)}</b> — ${esc(g.for.join(", "))}</span></label></li>`).join("")}</ul>` : '<p class="muted">직접 조리할 재료가 없어요.</p>';
   if (shop.mealkits.length) html += `<h2>밀키트</h2><ul class="list">${shop.mealkits.map((x) => `<li><b>${esc(x.menu)}</b><div class="apps"><a class="btn" href="https://search.shopping.naver.com/search/all?query=${encodeURIComponent(x.keyword)}" target="_blank" rel="noopener">네이버 쇼핑에서 '${esc(x.keyword)}' 찾기 ↗</a>${soon("mealkit", "바로 주문")}</div></li>`).join("")}</ul>`;
   if (shop.delivery.length) html += `<h2>배달</h2><p class="muted">앱 버튼을 누르면 검색어가 복사되고 배달앱이 열려요. 검색창에 붙여 넣어 주문하세요.</p><ul class="list">${shop.delivery.map((x) => ({ ...x, keyword: x.keyword.replace(/\s*배달$/, "") })).map((x) => `<li><b>${esc(x.menu)}</b> <span class="muted">검색어: ${esc(x.keyword)}</span><div class="apps">${DELIVERY_APPS.map(([n, url, cls]) => `<a class="btn app ${cls}" href="${url}" target="_blank" rel="noopener" data-copy="${esc(x.keyword)}">${n}</a>`).join("")}${soon("delivery", "바로 주문")}</div></li>`).join("")}</ul>`;
+  // 배달 메뉴가 없는 상에서도 배달 영역은 늘 보여 준다(휴대폰·PC 모두 같은 구성)
+  else html += `<h2>배달</h2><p class="muted">이번 테이블에는 배달로 준비하는 메뉴가 없어요. 더하고 싶은 음식이 있으면 배달앱에서 찾아보세요.</p><ul class="list"><li><b>배달앱 열기</b><div class="apps">${DELIVERY_APPS.map(([n, url, cls]) => `<a class="btn app ${cls}" href="${url}" target="_blank" rel="noopener" data-app="1">${n}</a>`).join("")}${soon("delivery", "바로 주문")}</div></li></ul>`;
   return html;
 }
 const DELIVERY_APPS = [["배달의민족", "https://www.baemin.com/", "baemin"], ["쿠팡이츠", "https://www.coupangeats.com/", "coupang"], ["땡겨요", "https://www.ddangyo.com/", "ddangyo"]];
 function bindPrepTab(p, agg) {
   document.querySelectorAll("[data-copy]").forEach((a) => (a.onclick = () => { try { navigator.clipboard.writeText(a.dataset.copy); } catch {} track("delivery_click", { party: p.id }); }));
+  document.querySelectorAll("[data-app]").forEach((a) => (a.onclick = () => track("delivery_click", { party: p.id })));
   // 준비 중인 바로 주문: 누르면 안내만 하고, 어떤 주문 수요가 있는지 기록한다
   document.querySelectorAll("[data-soon]").forEach((b) => (b.onclick = () => {
     track("order_interest", { party: p.id, kind: b.dataset.soon });
