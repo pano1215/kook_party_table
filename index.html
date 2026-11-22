@@ -22,6 +22,7 @@ h2{font-size:21px;margin:30px 0 10px;letter-spacing:-.4px}
 h3{font-size:17px;margin:0;letter-spacing:-.2px}
 p{margin:6px 0}
 .muted{color:var(--quiet);font-size:14px}
+.menu-desc{font-size:14.5px;line-height:1.65;color:var(--ink,#22384A);margin:6px 0 2px;word-break:keep-all}
 .card{background:var(--surface);border-radius:24px;padding:20px;margin:14px 0;box-shadow:0 1px 2px rgba(33,29,26,.06),0 8px 24px rgba(33,29,26,.06)}
 @media (prefers-color-scheme:dark){.card{box-shadow:none;border:1px solid var(--line)}}
 .row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1 1 160px}
@@ -625,7 +626,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
 .host-stage-prep>.list{background:#fffdfa;border:1px solid #e2dace;border-radius:12px;padding:10px 20px;margin:12px 0 22px}
 .host-stage-prep>.list li:last-child{border-bottom:0}
 .host-stage-prep .apps{gap:10px}
-.host-stage-prep .btn{border-color:#ddd2c2;background:#fffcf5}
+.host-stage-prep .btn:not(.app){border-color:#ddd2c2;background:#fffcf5}
+.host-stage-prep .btn.app{border-color:transparent}
 @media (max-width:860px){
 .host-cover{grid-template-columns:1fr;gap:20px;padding:26px 0 24px}
 .host-cover-visual{height:220px;max-width:100%;border-radius:18px 18px 7px 7px}
@@ -801,7 +803,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
     <a class="side-new" href="#/"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M9 3.500 V14.500 M3.500 9 H14.500"></path></svg>새 파티 만들기</a>
     <p class="side-label">이전 파티</p>
     <nav id="sideList" aria-label="이전 파티 목록"></nav>
-    <a class="side-code" id="sideCode" href="#/new/2">코드로 파티 열기</a>
+    <a class="side-code" id="sideCode" href="#/new/2">초대 코드로 참여</a>
   </div>
 </aside>
 <div class="side-backdrop" id="sideBackdrop"></div>
@@ -1008,7 +1010,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
         prep_minutes: toMinutes(m.prep_minutes),
         ingredients: splitItems(m.ingredients),
         allergens: splitItems(m.allergens),
-        why: String(m.why || ""),
+        why: String(m.why || ""), desc: String(m.desc || "").slice(0, 160),
         plating_tip: String(m.plating_tip || ""),
         steps: (m.steps || []).map(String),
         search_keyword: String(m.search_keyword || m.name || ""),
@@ -1057,7 +1059,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
     const recipe = r.recipe || {};
     return { id, name: String(r.dish_guess || "사진으로 고른 메뉴"), role: "메인", method: "직접 조리", cost: toWon(r.estimated_cost),
       prep_minutes: toMinutes(recipe.cooking_time), ingredients: splitItems(recipe.ingredients), allergens: splitItems(r.allergens),
-      why: "호스트가 사진으로 고른 메뉴", plating_tip: String(r.plating_tip || ""), steps: (recipe.steps || []).map(String),
+      why: "호스트가 사진으로 고른 메뉴", desc: String(r.desc || "").slice(0, 160), plating_tip: String(r.plating_tip || ""), steps: (recipe.steps || []).map(String),
       search_keyword: String(r.dish_guess || ""), source: "사진" };
   }
 
@@ -1110,8 +1112,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
     for (const m of menus) {
       L.push(`### ${m.name} (${m.role} · ${m.method === "직접 조리" ? "직접 요리하기" : m.method} · ${m.cost.toLocaleString()}원)`);
       if (flagged.includes(m)) L.push(`- ⚠ 알레르기 성분: ${check.per_menu[m.id].allergy.join(", ")}`);
-      if (m.why) L.push(`- 고른 이유: ${m.why}`);
-      if (m.plating_tip) L.push(`- 플레이팅: ${m.plating_tip}`);
+      if (m.desc) L.push(`- ${m.desc}`);
       if (m.method === "직접 조리") m.steps.forEach((s, i) => L.push(`${i + 1}. ${s}`));
       else L.push(`- 검색어: ${m.search_keyword}`);
       L.push("");
@@ -1130,7 +1131,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
   const PLAN_SCHEMA = { title: "한 상 이름(예: 가을 저녁 와인 한 상)", concept: "이 한 상의 분위기와 구성 이유 두세 문장",
     menus: [{ name: "메뉴 이름", role: ROLES.join(" | "), method: METHODS.join(" | "), estimated_cost: "이 인원 기준 예상 비용(원, 숫자만)",
       prep_minutes: "준비에 드는 분(숫자만). 배달은 0", ingredients: ["재료와 양(직접 조리·밀키트). 배달은 대표 재료"],
-      allergens: ["이 메뉴에 들어가는 알레르기 성분을 모두"], why: "누구의 어떤 취향을 반영했는지(이름 없이 낸 의견은 '한 분이'로)",
+      allergens: ["이 메뉴에 들어가는 알레르기 성분을 모두"], why: "누구의 어떤 취향을 반영했는지(이름 없이 낸 의견은 '한 분이'로)", desc: "먹고 싶어지는 메뉴 묘사 한두 문장. 맛·향·식감·온도를 눈에 그려지게, 60자 안팎. 손님 이름이나 고른 이유는 쓰지 않는다",
       plating_tip: "있어 보이게 담는 방법 한 줄", steps: ["직접 조리일 때만 조리 단계. 아니면 빈 배열"], search_keyword: "밀키트·배달일 때 검색할 말" }],
     host_tips: ["호스트가 미리 알면 좋은 것"] };
   function planPrompt(party, agg, avoid, recent) {
@@ -1163,7 +1164,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
   const PHOTO_SCHEMA = { is_food: true, non_food_reason: "음식이 아닐 때만 이유, 음식이면 빈 문자열", dish_guess: "음식명 후보", confidence: "high | medium | low",
     summary: "사진 기반 분석 요약", visible_ingredients: ["사진에서 보이는 재료"], guessed_ingredients: ["사진만으로 추정한 재료"],
     recipe: { servings: 0, cooking_time: "예: 20분", difficulty: "easy | medium | hard", ingredients: ["레시피에 필요한 재료와 양"], cooking_tools: ["칼, 도마 등"], cooking_equipment: ["가스레인지, 오븐 등"], steps: ["조리 단계"] },
-    allergens: ["레시피에 들어가는 알레르기 성분"], estimated_cost: "이 인원 기준 예상 재료비(원, 숫자만)", plating_tip: "있어 보이게 담는 방법 한 줄", warnings: ["주의사항"] };
+    allergens: ["레시피에 들어가는 알레르기 성분"], estimated_cost: "이 인원 기준 예상 재료비(원, 숫자만)", desc: "먹고 싶어지는 메뉴 묘사 한두 문장. 맛·향·식감이 눈에 그려지게, 60자 안팎", plating_tip: "있어 보이게 담는 방법 한 줄", warnings: ["주의사항"] };
   function photoPrompt(servings, pref, avoid) {
     return [
       "너는 음식 사진을 분석하는 요리 보조 AI다.", "", "[설정]", `- 목표 인분: ${servings}인분`,
@@ -1178,14 +1179,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
 
   // ---------------------------------------------------------------- 시연 데이터
   const DEMO_POOL = [
-    { name: "감바스 알 아히요와 바게트", role: "메인", method: "직접 조리", estimated_cost: 22000, prep_minutes: 30, ingredients: ["새우 300g", "올리브유 150ml", "마늘 10쪽", "페페론치노 5개", "바게트 1개"], allergens: ["새우", "밀"], why: "여럿이 나눠 먹기 좋은 따뜻한 메인이에요", plating_tip: "무쇠 팬째 상 가운데에 두고 바게트를 비스듬히 꽂아요", steps: ["새우 손질 후 소금·후추로 밑간한다", "약불에 올리브유, 편마늘, 페페론치노를 넣고 향을 낸다", "새우를 넣고 3분 익힌다", "바게트를 구워 곁들인다"] },
-    { name: "리코타 루꼴라 샐러드", role: "사이드", method: "직접 조리", estimated_cost: 12000, prep_minutes: 15, ingredients: ["리코타 치즈 150g", "루꼴라 100g", "방울토마토 10개", "꿀 1큰술", "발사믹 2큰술"], allergens: ["우유", "토마토"], why: "가벼운 채소 메뉴로 식탁의 균형을 맞춰요", plating_tip: "넓은 접시에 루꼴라를 깔고 리코타를 숟가락으로 떠서 군데군데 올려요", steps: ["루꼴라를 씻어 물기를 뺀다", "방울토마토를 반으로 자른다", "리코타를 올리고 꿀과 발사믹을 뿌린다"] },
-    { name: "밀푀유나베 밀키트", role: "메인", method: "밀키트", estimated_cost: 32000, prep_minutes: 25, ingredients: ["밀푀유나베 밀키트 4인분"], allergens: ["쇠고기", "대두(콩)", "밀"], why: "준비가 쉬우면서 식탁에서 끓여 먹는 재미가 있어요", plating_tip: "전골냄비째 휴대용 버너에 올려 상 가운데에 둬요", search_keyword: "밀푀유나베 밀키트 4인분", steps: [] },
-    { name: "모둠 꼬치", role: "안주", method: "배달", estimated_cost: 38000, prep_minutes: 0, ingredients: ["닭꼬치", "대파"], allergens: ["닭고기", "대두(콩)", "밀"], why: "와인이나 맥주와 잘 어울려요", plating_tip: "배달 용기에서 꺼내 긴 나무 도마에 나란히 놓아요", search_keyword: "모둠 꼬치 배달", steps: [] },
-    { name: "연어 카르파초", role: "사이드", method: "직접 조리", estimated_cost: 18000, prep_minutes: 15, ingredients: ["생연어 200g", "케이퍼 1큰술", "레몬 1개", "올리브유 3큰술", "적양파 1/2개"], allergens: [], why: "알레르기 성분이 적은 메뉴로 모두가 함께 먹을 수 있어요", plating_tip: "흰 접시에 얇게 펴 담고 레몬 제스트를 뿌려요", steps: ["연어를 얇게 저민다", "적양파를 얇게 썰어 찬물에 담근다", "접시에 연어를 펴고 양파·케이퍼를 올린다", "레몬즙과 올리브유를 뿌린다"] },
-    { name: "버섯 크림 리조또", role: "메인", method: "직접 조리", estimated_cost: 14000, prep_minutes: 35, ingredients: ["쌀 2컵", "양송이 8개", "생크림 200ml", "파르메산 치즈 30g", "양파 1개"], allergens: ["우유"], why: "맵지 않아 누구나 편하게 먹을 수 있어요", plating_tip: "오목한 접시에 담고 파르메산을 갈아 올려요", steps: ["양파와 버섯을 볶는다", "쌀을 넣고 투명해질 때까지 볶는다", "물을 나눠 부으며 18분 익힌다", "생크림과 치즈를 넣어 마무리한다"] },
-    { name: "과일 치즈 플래터", role: "디저트", method: "직접 조리", estimated_cost: 16000, prep_minutes: 15, ingredients: ["제철 과일 3종", "브리 치즈 1개", "크래커 1통", "꿀 2큰술"], allergens: ["우유", "밀"], why: "식사 뒤 이야기를 이어 갈 디저트예요", plating_tip: "나무 도마에 색이 다른 과일을 번갈아 놓아요", steps: ["과일을 한입 크기로 자른다", "치즈를 웨지 모양으로 자른다", "도마에 과일, 치즈, 크래커를 나눠 담는다"] },
-    { name: "하이볼과 논알콜 칵테일", role: "음료", method: "직접 조리", estimated_cost: 15000, prep_minutes: 10, ingredients: ["위스키 200ml", "탄산수 1L", "레몬 2개", "논알콜 진저에일 2캔"], allergens: [], why: "술을 마시는 분과 안 마시는 분이 함께 즐길 수 있어요", plating_tip: "같은 잔에 레몬 슬라이스를 넣어 두 음료를 함께 내요", steps: ["잔에 얼음을 채운다", "하이볼은 위스키 1 : 탄산수 3으로 섞는다", "논알콜 잔에는 진저에일과 레몬을 넣는다"] },
+    { name: "감바스 알 아히요와 바게트", desc: "마늘 향 가득한 올리브유에 탱글한 새우가 보글보글. 바삭한 바게트로 오일까지 남김없이 찍어 드세요.", role: "메인", method: "직접 조리", estimated_cost: 22000, prep_minutes: 30, ingredients: ["새우 300g", "올리브유 150ml", "마늘 10쪽", "페페론치노 5개", "바게트 1개"], allergens: ["새우", "밀"], why: "여럿이 나눠 먹기 좋은 따뜻한 메인이에요", plating_tip: "무쇠 팬째 상 가운데에 두고 바게트를 비스듬히 꽂아요", steps: ["새우 손질 후 소금·후추로 밑간한다", "약불에 올리브유, 편마늘, 페페론치노를 넣고 향을 낸다", "새우를 넣고 3분 익힌다", "바게트를 구워 곁들인다"] },
+    { name: "리코타 루꼴라 샐러드", desc: "구름처럼 부드러운 리코타에 쌉싸름한 루꼴라, 톡 터지는 방울토마토. 꿀과 발사믹이 달콤새콤하게 감싸요.", role: "사이드", method: "직접 조리", estimated_cost: 12000, prep_minutes: 15, ingredients: ["리코타 치즈 150g", "루꼴라 100g", "방울토마토 10개", "꿀 1큰술", "발사믹 2큰술"], allergens: ["우유", "토마토"], why: "가벼운 채소 메뉴로 식탁의 균형을 맞춰요", plating_tip: "넓은 접시에 루꼴라를 깔고 리코타를 숟가락으로 떠서 군데군데 올려요", steps: ["루꼴라를 씻어 물기를 뺀다", "방울토마토를 반으로 자른다", "리코타를 올리고 꿀과 발사믹을 뿌린다"] },
+    { name: "밀푀유나베 밀키트", desc: "배추와 깻잎, 소고기를 겹겹이 쌓아 끓인 따끈한 국물 요리. 뚜껑을 여는 순간 식탁이 환해져요.", role: "메인", method: "밀키트", estimated_cost: 32000, prep_minutes: 25, ingredients: ["밀푀유나베 밀키트 4인분"], allergens: ["쇠고기", "대두(콩)", "밀"], why: "준비가 쉬우면서 식탁에서 끓여 먹는 재미가 있어요", plating_tip: "전골냄비째 휴대용 버너에 올려 상 가운데에 둬요", search_keyword: "밀푀유나베 밀키트 4인분", steps: [] },
+    { name: "모둠 꼬치", desc: "숯불 향 밴 닭꼬치와 달큰하게 구운 대파. 한 입에 쏙, 맥주와 와인을 부르는 맛이에요.", role: "안주", method: "배달", estimated_cost: 38000, prep_minutes: 0, ingredients: ["닭꼬치", "대파"], allergens: ["닭고기", "대두(콩)", "밀"], why: "와인이나 맥주와 잘 어울려요", plating_tip: "배달 용기에서 꺼내 긴 나무 도마에 나란히 놓아요", search_keyword: "모둠 꼬치 배달", steps: [] },
+    { name: "연어 카르파초", desc: "얇게 저민 연어에 레몬과 올리브유를 두른 차가운 한 접시. 케이퍼가 짭조름하게 입맛을 깨워요.", role: "사이드", method: "직접 조리", estimated_cost: 18000, prep_minutes: 15, ingredients: ["생연어 200g", "케이퍼 1큰술", "레몬 1개", "올리브유 3큰술", "적양파 1/2개"], allergens: [], why: "알레르기 성분이 적은 메뉴로 모두가 함께 먹을 수 있어요", plating_tip: "흰 접시에 얇게 펴 담고 레몬 제스트를 뿌려요", steps: ["연어를 얇게 저민다", "적양파를 얇게 썰어 찬물에 담근다", "접시에 연어를 펴고 양파·케이퍼를 올린다", "레몬즙과 올리브유를 뿌린다"] },
+    { name: "버섯 크림 리조또", desc: "버섯 향이 깊게 밴 크림에 쌀알이 알맞게 씹히는 리조또. 파르메산을 눈처럼 뿌려 고소하게 마무리해요.", role: "메인", method: "직접 조리", estimated_cost: 14000, prep_minutes: 35, ingredients: ["쌀 2컵", "양송이 8개", "생크림 200ml", "파르메산 치즈 30g", "양파 1개"], allergens: ["우유"], why: "맵지 않아 누구나 편하게 먹을 수 있어요", plating_tip: "오목한 접시에 담고 파르메산을 갈아 올려요", steps: ["양파와 버섯을 볶는다", "쌀을 넣고 투명해질 때까지 볶는다", "물을 나눠 부으며 18분 익힌다", "생크림과 치즈를 넣어 마무리한다"] },
+    { name: "과일 치즈 플래터", desc: "제철 과일과 말랑한 브리 치즈, 바삭한 크래커를 한 판에. 꿀을 살짝 뿌리면 달콤하고 고소해요.", role: "디저트", method: "직접 조리", estimated_cost: 16000, prep_minutes: 15, ingredients: ["제철 과일 3종", "브리 치즈 1개", "크래커 1통", "꿀 2큰술"], allergens: ["우유", "밀"], why: "식사 뒤 이야기를 이어 갈 디저트예요", plating_tip: "나무 도마에 색이 다른 과일을 번갈아 놓아요", steps: ["과일을 한입 크기로 자른다", "치즈를 웨지 모양으로 자른다", "도마에 과일, 치즈, 크래커를 나눠 담는다"] },
+    { name: "하이볼과 논알콜 칵테일", desc: "얼음 가득 채운 잔에 레몬 향이 톡 쏘는 하이볼. 술을 안 마시는 손님도 진저에일로 함께 건배해요.", role: "음료", method: "직접 조리", estimated_cost: 15000, prep_minutes: 10, ingredients: ["위스키 200ml", "탄산수 1L", "레몬 2개", "논알콜 진저에일 2캔"], allergens: [], why: "술을 마시는 분과 안 마시는 분이 함께 즐길 수 있어요", plating_tip: "같은 잔에 레몬 슬라이스를 넣어 두 음료를 함께 내요", steps: ["잔에 얼음을 채운다", "하이볼은 위스키 1 : 탄산수 3으로 섞는다", "논알콜 잔에는 진저에일과 레몬을 넣는다"] },
   ];
   function demoPlan(party, avoid, recent) {
     const av = new Set(avoid || []), rc = new Set(recent || []);
@@ -1626,15 +1627,14 @@ function newView(i) {
     <div id="pErr"></div>
     <button class="primary" type="submit" style="margin-top:16px;width:100%">파티 만들고 초대 링크 받기</button>
   </form>
-  <h2 class="ask" id="codeForms" style="margin:26px 0 0">이미 만든 파티가 있거나 초대를 받았나요?</h2>
+  <h2 class="ask" id="codeForms" style="margin:26px 0 0">초대를 받았나요?</h2>
   <div class="row reentry-row">
-    <form class="card reentry-card" id="openHost"><h3>호스트 코드로 열기</h3><label for="hCode">호스트 코드(10자)</label><input id="hCode" type="password" autocomplete="off"><div id="hErr"></div><button type="submit" style="margin-top:12px">열기</button></form>
     <form class="card reentry-card" id="openGuest"><h3>게스트로 참여</h3><label for="gCode">초대 코드(6자)</label><input id="gCode" type="text" autocomplete="off"><div id="gErr"></div><button type="submit" style="margin-top:12px">취향 카드 쓰기</button></form>
   </div>`;
 }
 function bindNew() {
   bindCodeForms();
-  if (ui.toCodes && Date.now() - ui.toCodes < 1500) { $("#codeForms").scrollIntoView({ block: "start" }); $("#hCode").focus({ preventScroll: true }); }   // 서버에서 다시 받아 그려도 자리를 지킨다
+  if (ui.toCodes && Date.now() - ui.toCodes < 1500) { $("#codeForms").scrollIntoView({ block: "start" }); $("#gCode").focus({ preventScroll: true }); }   // 서버에서 다시 받아 그려도 자리를 지킨다
   const hint = (id, text, bad) => { const el = $(id); el.textContent = text; el.classList.toggle("warnt", !!bad); };
   const num = (id) => +$(id).textContent;
   const bpp = () => { const v = (document.querySelector("input[name=bpp]:checked") || {}).value || "30000"; return BUDGET_PP.find((x) => x[0] === v); };
@@ -1790,7 +1790,7 @@ function bindNew() {
       return;
     }
     safeSet(hostKey(id), "1", sessionStorage); rememberParty(id); track("party_created", { party: id, role: "host" });
-    flash("ok", `파티를 만들었어요. 호스트 코드 ${host} 를 꼭 적어 두세요. 다시 보여 드리지 않아요.`);
+    flash("ok", "파티를 만들었어요. 이 브라우저의 '이전 파티'에서 언제든 다시 열 수 있어요.");
     const copied = await copyText(`${location.href.split("#")[0]}#/p/${invite}`);   // 버튼을 누른 직후라 대부분 바로 복사된다
     ui.shareAfter = { id, copied, host };
     ui.tab = "guests"; go(`#/host/${id}`); window.scrollTo({ top: 0 });
@@ -1816,18 +1816,6 @@ function bindHome() {
   }));
 }
 function bindCodeForms() {
-  $("#openHost").onsubmit = async (e) => {
-    e.preventDefault();
-    const code = cleanCode($("#hCode").value); const h = sha256(code);
-    if (REMOTE) {
-      try { const j = await api("/api/party?byhost=1", { headers: { "x-host-code": code } }); CACHE.parties[j.party.id] = j.party; safeSet(tokKey(j.party.id), code); rememberParty(j.party.id); ui.tab = "guests"; go(`#/host/${j.party.id}`); }
-      catch (er) { $("#hErr").innerHTML = `<p class="err">${esc(er.status === 403 || er.status === 404 ? "호스트 코드가 맞지 않아요." : er.message)}</p>`; }
-      return;
-    }
-    const p = code.length === 10 && Object.values(loadAll().parties).find((x) => x.host_hash === h);
-    if (!p) { $("#hErr").innerHTML = '<p class="err">호스트 코드가 맞지 않아요.</p>'; return; }
-    safeSet(hostKey(p.id), "1", sessionStorage); rememberParty(p.id); ui.tab = "guests"; go(`#/host/${p.id}`);
-  };
   $("#openGuest").onsubmit = (e) => { e.preventDefault(); go(`#/p/${cleanCode($("#gCode").value)}`); };
 }
 
@@ -2004,8 +1992,8 @@ function bindInterview() {
 function hostView(id) {
   const p = getParty(id);
   if (!p && REMOTE && !CACHE.loaded[location.hash]) return '<p class="muted">파티를 불러오는 중이에요…</p>';
-  if (!p) return `<div class="note danger">파티를 찾을 수 없어요.${REMOTE ? " 호스트 코드로 다시 열거나, 파티일 7일 뒤라 지워졌는지 확인해 주세요." : ""}</div><a class="btn" href="#/">처음으로</a>`;
-  if (!isHost(id)) return `<div class="note warn">호스트 코드로 열어 주세요.</div><a class="btn" href="#/">처음으로</a>`;
+  if (!p) return `<div class="note danger">파티를 찾을 수 없어요.${REMOTE ? " 파티일 7일 뒤에는 자동으로 지워져요." : ""}</div><a class="btn" href="#/">처음으로</a>`;
+  if (!isHost(id)) return `<div class="note warn">이 파티는 만든 브라우저에서만 열 수 있어요.</div><a class="btn" href="#/">처음으로</a>`;
   const agg = K.aggregate(p.guests);
   const tabs = [["guests", "① 게스트 취향"], ["plan", "② 테이블 꾸미기"], ["prep", "③ 장보기·배달"]];
   if (!["guests", "plan", "prep"].includes(ui.tab)) ui.tab = "guests";
@@ -2093,7 +2081,6 @@ function openShare(p, copied, hostCodeOnce) {
       <button type="button" class="sh" id="shCopy"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.500"></rect><path d="M13 7 V5.500 A2.500 2.500 0 0 0 10.500 3 H5.500 A2.500 2.500 0 0 0 3 5.500 V10.500 A2.500 2.500 0 0 0 5.500 13 H7"></path></svg>링크 복사하기</button>
     </div>
     <p class="sh-status" id="shStatus" role="status" aria-live="polite"></p>
-    ${hostCodeOnce ? `<p class="sh-host">호스트 코드 <b class="code">${esc(hostCodeOnce)}</b><br>다른 기기에서 이 파티를 열 때 필요해요. 꼭 적어 두세요.</p>` : ""}
   </div>`;
   const prev = document.activeElement;
   const close = () => { el.remove(); document.removeEventListener("keydown", onKey); if (prev && prev.focus && document.contains(prev)) prev.focus(); };
@@ -2178,7 +2165,7 @@ function planTab(p, agg) {
       <div class="body"><div class="head"><h3>${esc(m.name)}</h3><span class="cost">${won(m.cost)}</span></div>
       <p><span class="badge">${esc(methodLabel(m.method))}</span>${m.prep_minutes ? `<span class="badge">${m.prep_minutes}분</span>` : ""}${m.source === "사진" ? '<span class="badge">📷 사진</span>' : ""}${onTable.has(m.id) ? "" : '<span class="badge danger">상에서 뺌</span>'}</p>
       ${notes}
-      ${m.why ? `<p class="muted">고른 이유: ${esc(m.why)}</p>` : ""}${m.plating_tip ? `<p class="muted">플레이팅: ${esc(m.plating_tip)}</p>` : ""}
+      ${m.desc ? `<p class="menu-desc">${esc(m.desc)}</p>` : ""}
       <button type="button" class="small more" data-open-menu="${esc(m.id)}">재료와 레시피 보기</button>
     </div></article>`);
   }
@@ -2197,6 +2184,7 @@ function openMenu(p, m) {
     <div class="pin-art ${ROLE_TONE[m.role] || toneOf(m.name)}" data-img="${esc(imgTitle(m.name))}"><span aria-hidden="true">${foodArt(m.name)}</span></div>
     <h2 id="mnTitle">${esc(m.name)}</h2>
     <p class="mn-meta"><span class="badge">${esc(m.role)}</span><span class="badge">${esc(methodLabel(m.method))}</span>${m.prep_minutes ? `<span class="badge">${m.prep_minutes}분</span>` : ""}<span class="badge">${won(m.cost)}</span></p>
+    ${m.desc ? `<p class="menu-desc">${esc(m.desc)}</p>` : ""}
     <h3>필요한 재료</h3>
     ${m.ingredients.length ? `<ul class="mn-list">${m.ingredients.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : '<p class="muted">재료 정보가 없어요.</p>'}
     ${m.allergens.length ? `<p class="muted">알러지 성분: ${esc(m.allergens.join(", "))}</p>` : ""}
