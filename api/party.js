@@ -13,11 +13,11 @@ module.exports = async (req, res) => {
       return L.send(res, 200, { party: L.forHost(p) });
     }
     if (req.method === "POST") {
-      if (!(await L.limit(req, "party", 20))) return L.send(res, 429, { error: "잠시 뒤 다시 시도해 주세요." });
+      if (!(await L.limit(req, "party", 60))) return L.send(res, 429, { error: "잠시 뒤 다시 시도해 주세요." });
       const { party: q } = await L.body(req);
       if (!q || !/^[a-f0-9]{16}$/.test(q.id || "") || !/^[A-Z0-9]{6}$/.test(q.invite_code || "") || !/^[a-f0-9]{64}$/.test(q.host_hash || "")) return L.send(res, 400, { error: "파티 정보가 올바르지 않아요." });
       if (await L.cmd("GET", `invite:${q.invite_code}`)) return L.send(res, 409, { error: "초대 코드가 겹쳐요. 다시 시도해 주세요." });
-      const p = { ...q, src: L.normChannel(q.src), version: 1, guests: [], plan: null, include_blocked: {}, feedback: [], created_at: new Date().toISOString() };
+      const p = { ...q, src: L.normChannel(q.src), budget_pp: L.str(q.budget_pp, 30), kinds: L.arr(q.kinds, 9, 40), version: 1, guests: [], plan: null, include_blocked: {}, created_at: new Date().toISOString() };
       delete p.plan_made_at;
       await L.saveParty(p);
       await L.logEvent(req, "party_created", { ch: p.src, role: "host", party: p.id });   // 핵심 행동 ① 서버가 직접 기록
@@ -36,11 +36,13 @@ module.exports = async (req, res) => {
         return { ...L.cleanCard(g), by_host: true, id: L.str(g.id, 20) || L.rand(6), submitted_at: new Date().toISOString() };
       });
       const next = { ...q, id: p.id, invite_code: p.invite_code, host_hash: p.host_hash, created_at: p.created_at, src: p.src, plan_made_at: p.plan_made_at, guests, version: p.version + 1 };
-      const firstPlan = !p.plan_made_at && next.plan && typeof next.plan === "object";
-      if (firstPlan) next.plan_made_at = new Date().toISOString();
-      else if (!next.plan_made_at) delete next.plan_made_at;
+      // 새 추천인지: 앱이 추천할 때마다 plan.made_at 을 새로 찍는다(알레르기 확인 등으로 다시 저장할 때는 그대로)
+      const stamp = (x) => (x && typeof x === "object" ? L.str(x.made_at, 30) || JSON.stringify(x.menus || []) : "");
+      const newPlan = !!(next.plan && typeof next.plan === "object") && stamp(next.plan) !== stamp(p.plan);
+      if (newPlan && !next.plan_made_at) next.plan_made_at = new Date().toISOString();
+      if (!next.plan_made_at) delete next.plan_made_at;
       await L.saveParty(next);
-      if (firstPlan) await L.logEvent(req, "plan_made", { ch: p.src, role: "host", party: p.id });   // 핵심 행동 ④ 파티당 첫 추천만
+      if (newPlan) await L.logEvent(req, "plan_made", { ch: p.src, role: "host", party: p.id });   // 핵심 행동 ④ 추천할 때마다
       return L.send(res, 200, { party: L.forHost(next) });
     }
     if (req.method === "DELETE") {

@@ -88,10 +88,12 @@ function normChannel(raw) {
 // 익명 방문자 ID: 브라우저마다 만든 16자리 무작위 값. 이름·연락처와 연결되지 않는다
 const visitor = (req) => { const v = String(req.headers["x-visitor"] || ""); return /^[a-f0-9]{16}$/.test(v) ? v : ""; };
 // 이벤트 한 줄: { t, ev, ch, role, vid, party }. 최근 5만 건만 남긴다
-async function logEvent(req, ev, { ch, role, party } = {}) {
+async function logEvent(req, ev, { ch, role, party, kind } = {}) {
   try {
-    await cmd("LPUSH", "events", JSON.stringify({ t: new Date().toISOString(), ev, ch: normChannel(ch), role: role || "", vid: visitor(req), party: str(party, 20) }));
+    const e = { t: new Date().toISOString(), ev, ch: normChannel(ch), role: role || "", vid: visitor(req), party: str(party, 20) };
+    if (kind) e.kind = str(kind, 20);
+    await cmd("LPUSH", "events", JSON.stringify(e));
     await cmd("LTRIM", "events", "0", "49999");
   } catch {}   // 기록이 실패해도 본래 요청은 성공시킨다
 }
-module.exports = { cmd, sha256, rand, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: !!URL_, normChannel, visitor, logEvent };
+module.exports = { cmd, sha256, rand, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: !!URL_, arr, normChannel, visitor, logEvent };
