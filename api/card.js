@@ -28,5 +28,5 @@ module.exports = async (req, res) => {
       return L.send(res, 200, { id: cid, token, edited: i >= 0 });
     }
     L.send(res, 409, { error: "잠시 뒤 다시 보내 주세요." });
-  } catch (e) { L.send(res, 500, { error: "서버에서 문제가 생겼어요." }); }
+  } catch (e) { console.error("[moggu]", req.method, req.url, e && e.message); L.send(res, 500, { error: "서버에서 문제가 생겼어요." }); }
 };

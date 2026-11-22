@@ -1,8 +1,9 @@
 // 모꾸 서버 공통: 저장소 + 도우미
 // 저장소는 Supabase(Postgres)를 먼저 쓰고, 없으면 Upstash Redis, 둘 다 없으면 메모리(로컬 시험용, 서버를 다시 켜면 사라짐)
 const crypto = require("crypto");
-const SUPA_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
-const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "";   // 서버 전용 키(브라우저로 나가지 않는다)
+// 주소는 https://xxxx.supabase.co 꼴. 뒤에 /rest/v1 이나 빈칸이 붙어 와도 맞춰 쓴다
+const SUPA_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim().replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
+const SUPA_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || "").trim();   // 서버 전용 키(브라우저로 나가지 않는다)
 const SUPA = !!(SUPA_URL && SUPA_KEY);
 const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "";
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
@@ -18,9 +19,11 @@ async function cmd(...args) {
 }
 // ---- Supabase: Redis 명령 몇 가지를 표 두 개(kv, lists)로 옮긴다. 표는 supabase.sql 로 만든다
 async function supa(path, { method = "GET", body, prefer } = {}) {
-  const r = await fetch(`${SUPA_URL}/rest/v1/${path}`, { method, headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, "Content-Type": "application/json", ...(prefer ? { Prefer: prefer } : {}) }, body: body === undefined ? undefined : JSON.stringify(body) });
+  let r;
+  try { r = await fetch(`${SUPA_URL}/rest/v1/${path}`, { method, headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, "Content-Type": "application/json", ...(prefer ? { Prefer: prefer } : {}) }, body: body === undefined ? undefined : JSON.stringify(body) }); }
+  catch (e) { throw new Error(`supabase 연결 실패: ${e.message}. SUPABASE_URL 을 확인해 주세요.`); }
   const t = await r.text();
-  if (!r.ok) throw new Error(`supabase ${r.status}: ${t.slice(0, 200)}`);
+  if (!r.ok) throw new Error(`supabase ${r.status}: ${t.slice(0, 300)}`);
   return t ? JSON.parse(t) : null;
 }
 const kq = (k) => `kv?key=eq.${encodeURIComponent(k)}`;
@@ -123,6 +126,24 @@ async function limit(req, name, max) {
   const n = await cmd("INCR", k); if (n === 1) await cmd("EXPIRE", k, "3600");
   return n <= max;
 }
+async function storageCheck() {
+  const out = { kind: SUPA ? "supabase" : URL_ ? "upstash" : "memory", ok: false, steps: [] };
+  if (SUPA) out.url_ok = /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(SUPA_URL), out.key_kind = SUPA_KEY.startsWith("sb_secret_") ? "secret" : SUPA_KEY.startsWith("sb_publishable_") ? "publishable(브라우저용, 서버용 아님)" : SUPA_KEY.startsWith("eyJ") ? "jwt" : "알 수 없음";
+  const k = `check:${rand(4)}`;
+  const run = async (name, fn) => { try { const v = await fn(); out.steps.push({ step: name, ok: true }); return v; } catch (e) { out.steps.push({ step: name, ok: false, error: String(e.message || e).slice(0, 300) }); throw e; } };
+  try {
+    await run("쓰기(kv)", () => cmd("SET", k, "1", "EX", "60"));
+    const v = await run("읽기(kv)", () => cmd("GET", k));
+    if (v !== "1") throw (out.steps.push({ step: "읽은 값 확인", ok: false, error: `쓴 값이 읽히지 않아요(${v}). 서버용 키가 아니면 이렇게 돼요.` }), new Error("mismatch"));
+    await run("숫자 올리기(kv_incr 함수)", () => cmd("INCR", `${k}:n`));
+    await run("목록 쓰기(lists)", () => cmd("LPUSH", `${k}:l`, "x"));
+    await run("목록 읽기(lists)", () => cmd("LRANGE", `${k}:l`, "0", "0"));
+    await run("목록 정리(list_trim 함수)", () => cmd("LTRIM", `${k}:l`, "0", "-1"));   // 시험용 목록을 비운다
+    await run("지우기(kv)", () => cmd("DEL", k)); await cmd("DEL", `${k}:n`).catch(() => {});
+    out.ok = true;
+  } catch {}
+  return out;
+}
 const MAX_CARDS = 12;
 
 // ---- 유입 경로(채널)와 핵심 행동 기록
@@ -148,4 +169,4 @@ async function logEvent(req, ev, { ch, role, party, kind } = {}) {
     await cmd("LTRIM", "events", "0", "49999");
   } catch {}   // 기록이 실패해도 본래 요청은 성공시킨다
 }
-module.exports = { cmd, sha256, rand, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: SUPA || !!URL_, storageKind: SUPA ? "supabase" : URL_ ? "upstash" : "memory", arr, normChannel, visitor, logEvent };
+module.exports = { cmd, sha256, rand, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: SUPA || !!URL_, storageKind: SUPA ? "supabase" : URL_ ? "upstash" : "memory", storageCheck, arr, normChannel, visitor, logEvent };

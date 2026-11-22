@@ -26,5 +26,5 @@ module.exports = async (req, res) => {
     const kind = (KINDS[b.ev] || []).includes(b.kind) ? b.kind : "";
     await L.logEvent(req, b.ev, { ch, role, party: p ? p.id : "", kind });
     L.send(res, 200, { ok: true });
-  } catch (e) { L.send(res, 500, {}); }
+  } catch (e) { console.error("[moggu]", req.method, req.url, e && e.message); L.send(res, 500, {}); }
 };

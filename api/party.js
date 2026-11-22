@@ -53,5 +53,5 @@ module.exports = async (req, res) => {
       return L.send(res, 200, { ok: true });
     }
     L.send(res, 405, { error: "지원하지 않는 요청이에요." });
-  } catch (e) { L.send(res, e.status || 500, { error: e.status ? e.message : "서버에서 문제가 생겼어요. 잠시 뒤 다시 시도해 주세요." }); }
+  } catch (e) { console.error("[moggu]", req.method, req.url, e && e.message); L.send(res, e.status || 500, { error: e.status ? e.message : "서버에서 문제가 생겼어요. 잠시 뒤 다시 시도해 주세요." }); }
 };

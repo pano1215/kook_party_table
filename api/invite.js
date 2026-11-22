@@ -11,5 +11,5 @@ module.exports = async (req, res) => {
     const cid = url.searchParams.get("card"), tok = req.headers["x-card-token"] || "";
     const mine = cid && tok ? (p.guests || []).find((g) => g.id === cid && g.token_hash === L.sha256(tok)) : null;
     L.send(res, 200, { party: L.forGuest(p, mine) });
-  } catch (e) { L.send(res, 500, { error: "서버에서 문제가 생겼어요." }); }
+  } catch (e) { console.error("[moggu]", req.method, req.url, e && e.message); L.send(res, 500, { error: "서버에서 문제가 생겼어요." }); }
 };

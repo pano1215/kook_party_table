@@ -34,5 +34,5 @@ module.exports = async (req, res) => {
       }
     }
     L.send(res, 502, { error: `AI 요청이 실패했어요(${last}). 쓸 수 있는 모델이 없으면 GROQ_MODEL 환경변수로 모델을 지정해 주세요.` });
-  } catch (e) { L.send(res, 500, { error: "AI 호출 중 문제가 생겼어요." }); }
+  } catch (e) { console.error("[moggu]", req.method, req.url, e && e.message); L.send(res, 500, { error: "AI 호출 중 문제가 생겼어요." }); }
 };
