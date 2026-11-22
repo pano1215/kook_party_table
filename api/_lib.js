@@ -113,19 +113,42 @@ function cleanCard(c) {
   return { nickname: str(c.nickname, 20), anonymous: !!c.anonymous, allergies: arr(c.allergies), dislikes: arr(c.dislikes), likes: arr(c.likes),
     spice: str(c.spice, 30), drink: str(c.drink, 30), message: str(c.message, 100), src: str(c.src, 30), by_host: false };
 }
-function send(res, status, body) { res.statusCode = status; res.setHeader("Content-Type", "application/json; charset=utf-8"); res.setHeader("Cache-Control", "no-store"); res.end(JSON.stringify(body)); }
+function send(res, status, body) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8"); res.setHeader("Cache-Control", "no-store");
+  res.setHeader("X-Content-Type-Options", "nosniff"); res.setHeader("Referrer-Policy", "no-referrer");
+  res.end(JSON.stringify(body));
+}
+// 파티로 저장할 수 있는 항목만 골라 형식과 길이를 맞춘다(보낸 그대로 저장하지 않는다)
+const METHODS = ["직접 조리", "밀키트", "배달"];
+const clampInt = (v, lo, hi, d) => { const n = Math.round(+v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
+function cleanParty(q) {
+  const methods = arr(q.methods, 3, 10).filter((m) => METHODS.includes(m));
+  return {
+    name: str(q.name, 30), date: /^\d{4}-\d{2}-\d{2}$/.test(q.date || "") ? q.date : new Date().toISOString().slice(0, 10),
+    start: /^\d{2}:\d{2}$/.test(q.start || "") ? q.start : "19:00",
+    people: clampInt(q.people, 2, 5, 4), menu_count: clampInt(q.menu_count, 2, 8, 4), budget: clampInt(q.budget, 10000, 1000000, 100000),
+    budget_pp: str(q.budget_pp, 30), kinds: arr(q.kinds, 9, 40), mood: str(q.mood, 20), methods: methods.length ? methods : METHODS, notes: str(q.notes, 300),
+  };
+}
 async function body(req) {
   if (req.body && typeof req.body === "object") return req.body;
   if (typeof req.body === "string") { try { return JSON.parse(req.body); } catch { return {}; } }
   return await new Promise((ok) => { let d = ""; req.on("data", (c) => (d += c)); req.on("end", () => { try { ok(JSON.parse(d || "{}")); } catch { ok({}); } }); });
 }
 // 간단한 요청량 제한(IP·이름별, 1시간)
+// 요청한 쪽의 IP: Vercel이 직접 채워 주는 값을 먼저 쓴다(브라우저가 보낸 x-forwarded-for 는 꾸밀 수 있다)
+const clientIp = (req) => String(req.headers["x-vercel-forwarded-for"] || req.headers["x-real-ip"] || req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "x").split(",")[0].trim();
 async function limit(req, name, max) {
-  const ip = String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "x").split(",")[0].trim();
+  const ip = clientIp(req);
   const k = `rl:${name}:${ip}:${Math.floor(Date.now() / 3600000)}`;
   const n = await cmd("INCR", k); if (n === 1) await cmd("EXPIRE", k, "3600");
   return n <= max;
 }
+// 실패 횟수 제한: 틀렸을 때만 센다(bump). 넘었는지는 세지 않고 본다(blocked)
+const failKey = (req, name) => `rl:${name}:${clientIp(req)}:${Math.floor(Date.now() / 3600000)}`;
+async function blocked(req, name, max) { return +(await cmd("GET", failKey(req, name)) || 0) >= max; }
+async function bump(req, name) { const k = failKey(req, name); const n = await cmd("INCR", k); if (n === 1) await cmd("EXPIRE", k, "3600"); }
 async function storageCheck() {
   const out = { kind: SUPA ? "supabase" : URL_ ? "upstash" : "memory", ok: false, steps: [] };
   if (SUPA) out.url_ok = /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(SUPA_URL), out.key_kind = SUPA_KEY.startsWith("sb_secret_") ? "secret" : SUPA_KEY.startsWith("sb_publishable_") ? "publishable(브라우저용, 서버용 아님)" : SUPA_KEY.startsWith("eyJ") ? "jwt" : "알 수 없음";
@@ -169,4 +192,4 @@ async function logEvent(req, ev, { ch, role, party, kind } = {}) {
     await cmd("LTRIM", "events", "0", "49999");
   } catch {}   // 기록이 실패해도 본래 요청은 성공시킨다
 }
-module.exports = { cmd, sha256, rand, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: SUPA || !!URL_, storageKind: SUPA ? "supabase" : URL_ ? "upstash" : "memory", storageCheck, arr, normChannel, visitor, logEvent };
+module.exports = { cmd, sha256, rand, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: SUPA || !!URL_, storageKind: SUPA ? "supabase" : URL_ ? "upstash" : "memory", storageCheck, safeEq, cleanParty, blocked, bump, arr, normChannel, visitor, logEvent };

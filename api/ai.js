@@ -16,8 +16,14 @@ module.exports = async (req, res) => {
     if (!key) return L.send(res, 503, { error: "서버에 AI 키가 없어요." });
     if (!(await L.limit(req, "ai", 40))) return L.send(res, 429, { error: "AI 요청이 많아요. 잠시 뒤 다시 시도해 주세요." });
     const b = await L.body(req);
-    const s = JSON.stringify(b.content || "");
-    if (s.length > 6000000) return L.send(res, 413, { error: "요청이 너무 커요." });
+    // 우리 서비스의 호스트만 쓸 수 있게: 실제 파티와 그 호스트 코드가 있어야 한다(누구나 AI 키를 대신 쓰지 못하게)
+    const p = await L.getParty(String(b.party || ""));
+    if (!p || !L.hostOk(p, req.headers["x-host-code"] || "")) { await L.bump(req, "hostfail"); return L.send(res, 403, { error: "파티 호스트만 메뉴 추천을 받을 수 있어요." }); }
+    if (typeof b.content !== "string" || !b.content.trim()) return L.send(res, 400, { error: "요청 내용이 비어 있어요." });
+    if (b.content.length > 20000) return L.send(res, 413, { error: "요청이 너무 커요." });
+    const day = new Date().toISOString().slice(0, 10), dk = `ai:${p.id}:${day}`;
+    const used = await L.cmd("INCR", dk); if (used === 1) await L.cmd("EXPIRE", dk, "90000");
+    if (used > 60) return L.send(res, 429, { error: "오늘은 이 파티의 추천 횟수를 모두 썼어요. 내일 다시 시도해 주세요." });
     let last = 0;
     for (const model of [...new Set(MODELS)]) {
       for (const extra of [{ response_format: { type: "json_object" } }, {}]) {   // JSON 모드를 못 쓰는 모델이면 그냥 다시 부른다
