@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>모꾸 — 좋아하는 사람들과 집에서 좀 더 특별하게</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
 <style>
 /* 모꾸(구 쿸) v0.3 — 핀 보드: 하얀 바탕 위에 음식 핀을 모으듯 메뉴를 고른다 */
 :root{--paper:#FFFFFF;--ink:#211D1A;--quiet:#6F6862;--mist:#F1EFEC;--line:#E4E0DB;--berry:#B8336A;--berry-ink:#FFFFFF;--basil:#3F7D4E;--saffron:#F2B33D;--sky:#5C8DD6;--peach:#F7B39A;
@@ -792,30 +792,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
 @media(prefers-reduced-motion:reduce){.guest-hero-visual{transform:none}}
 
 
-/* MOKKU / HANDWRITTEN TYPOGRAPHY 2026-11-23
-   Font family only — preserves all existing text sizes, spacing, layout and JS.
-   Google Fonts Nanum Pen Script for handwritten Korean UI. */
-:root { --mokku-diary-hand: 'Nanum Pen Script', 'Gowun Batang', 'Noto Sans KR', sans-serif; }
-body { font-family: var(--mokku-diary-hand) !important; }
-body :is(
-  h1,h2,h3,h4,h5,h6,p,span,div,li,b,strong,small,em,blockquote,
-  label,legend,summary,output,button,input,textarea,select,option,
-  .btn,.chip,.brand,.q,.display,.stepper,.field-btn,
-  .host-cover,.host-invite,.host-preferences,.host-details,
-  .guest-hero,.guest-form,.create-form,.mood,.pick,.note,.stat,
-  .hint,.muted,.ask
-) { font-family: var(--mokku-diary-hand) !important; }
-/* Preserve original English editorial accents. */
-body :is(.script,.foot-line),
-body .brand .script, body .cta-card .script,
-body .guest-hero-copy .script, body .guest-form-intro .script,
-body .create-form::before {
-  font-family: 'Cormorant Garamond', Georgia, serif !important;
-}
-/* Preserve equal-width invitation codes. */
-body .code, body .code * {
-  font-family: ui-monospace, Menlo, Consolas, monospace !important;
-}
 </style>
 </head>
 <body>
