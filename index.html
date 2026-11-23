@@ -791,6 +791,31 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
 }
 @media(prefers-reduced-motion:reduce){.guest-hero-visual{transform:none}}
 
+
+/* MOKKU TYPOGRAPHY — Cafe24 Ssurround Air: font-only update */
+@font-face {
+  font-family: 'MokkuSsurroundAir';
+  src: local('Cafe24 Ssurround Air'), local('Cafe24SsurroundAir'),
+       url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24SsurroundAir.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+body,
+body :is(h1,h2,h3,h4,h5,h6,p,span,div,li,ul,ol,label,legend,
+         button,a,input,textarea,select,option,summary,fieldset,
+         table,th,td,caption,output,b,strong,small,em,blockquote,time) {
+  font-family: 'MokkuSsurroundAir', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif !important;
+}
+body .script, body .script *, body .foot-line, body .foot-line *,
+body .guest-form-intro .script, body .guest-hero .script,
+body .create-form::before, body .host-kicker,
+body .guest-section::before, body .guest-ornament .flower-mark {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+}
+body .code, body .code * {
+  font-family: ui-monospace, Menlo, Consolas, monospace !important;
+}
 </style>
 </head>
 <body>
