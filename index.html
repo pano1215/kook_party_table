@@ -1359,8 +1359,15 @@ const myParties = () => { try { return JSON.parse(safeGet(MINE_KEY) || "[]"); } 
 const rememberParty = (id) => { const m = myParties().filter((x) => x !== id); m.unshift(id); safeSet(MINE_KEY, JSON.stringify(m.slice(0, 30))); };
 const isHost = (id) => (REMOTE ? !!hostCode(id) : safeGet(hostKey(id), sessionStorage) === "1" || myParties().includes(id));
 // 유입 경로: 채널마다 다른 링크(?src=instagram 등)를 뿌려 어디서 들어왔는지 센다. 서버(api/_lib.js normChannel)와 같은 규칙
-const CHANNELS = [["instagram", "인스타그램", /^(instagram|insta|ig|인스타)/i], ["friend", "지인", /^(friend|지인|ref)/i], ["kakao", "카카오 오픈챗", /^(kakao|openchat|오픈챗|카카오)/i],
-  ["threads", "스레드", /^(threads|스레드)/i], ["naver_cafe", "네이버 카페", /^(naver_?cafe|ncafe|cafe|카페)/i], ["naver_blog", "네이버 블로그", /^(naver_?blog|nblog|blog|블로그)/i]];
+const CHANNELS = [
+  ["instagram_reels", "인스타그램 · 릴스", /^(instagram[_-]?reels?|ig[_-]?reels?|reels?)$/i],
+  ["instagram_feed", "인스타그램 · 게시물(피드)", /^(instagram[_-]?(feed|posts?)|ig[_-]?(feed|posts?))$/i],
+  ["instagram_stories", "인스타그램 · 스토리", /^(instagram[_-]?(story|stories)|ig[_-]?(story|stories)|stories)$/i],
+  ["instagram", "인스타그램 · 미구분", /^(instagram|insta|ig|인스타)/i],
+  ["friend", "지인", /^(friend|지인|ref)/i], ["kakao", "카카오 오픈챗", /^(kakao|openchat|오픈챗|카카오)/i],
+  ["threads", "스레드", /^(threads|스레드)/i], ["naver_cafe", "네이버 카페", /^(naver_?cafe|ncafe|cafe|카페)/i],
+  ["naver_blog", "네이버 블로그", /^(naver_?blog|nblog|blog|블로그)/i]
+];
 const EXTRA_CH = [["invite", "초대받은 게스트가 연 파티"], ["direct", "직접 방문"], ["other", "기타"]];
 const CH_LABEL = Object.fromEntries([...CHANNELS, ...EXTRA_CH].map(([k, l]) => [k, l]));
 function normChannel(raw) {
@@ -1372,7 +1379,19 @@ function normChannel(raw) {
 }
 const SRC_KEY = "kook.src";
 (function captureSource() {
-  try { const q = new URLSearchParams(location.search); const src = q.get("src") || q.get("utm_source") || ""; if (src) sessionStorage.setItem(SRC_KEY, normChannel(src)); } catch {}
+  try {
+    const q = new URLSearchParams(location.search);
+    const src = q.get("src") || q.get("utm_source") || "";
+    // Meta 광고의 게재 위치 동적 매개변수(utm_term={{placement}})도 인식한다.
+    // 유기적 게시물은 ?src=instagram_reels|instagram_feed|instagram_stories 링크를 사용한다.
+    const placement = (q.get("utm_term") || q.get("placement") || "").toLowerCase();
+    const mapped = { instagram_reels: "instagram_reels", instagram_feed: "instagram_feed", instagram_stories: "instagram_stories",
+      "ig_reels": "instagram_reels", "ig_feed": "instagram_feed", "ig_stories": "instagram_stories",
+      "instagram_story": "instagram_stories", "ig_story": "instagram_stories" };
+    const fromPlacement = mapped[placement];
+    const chosen = src && normChannel(src) !== "instagram" ? normChannel(src) : (fromPlacement || (src ? normChannel(src) : ""));
+    if (chosen) sessionStorage.setItem(SRC_KEY, chosen);
+  } catch {}
 })();
 const currentSource = () => safeGet(SRC_KEY, sessionStorage) || "direct";
 // 익명 방문자 ID: 이 브라우저에서 처음 만든 무작위 16자리. 같은 사람이 여러 번 와도 한 명으로 센다(이름·연락처와 연결되지 않음)
@@ -2456,7 +2475,7 @@ function opsView() {
   <p class="muted">채널별로 사람들이 어디까지 왔는지 봐요. ${REMOTE ? "서버에 쌓인 기록이에요." : "서버가 없는 시연판이라 이 브라우저에 쌓인 기록만 보여요."}</p>
   ${REMOTE ? `<form class="card" id="opsForm"><label for="opsKey">운영자 키(OPS_KEY)</label><div class="money"><input id="opsKey" type="password" autocomplete="off" value="${esc(safeGet("kook.opskey", sessionStorage) || "")}"><button class="primary" type="submit">기록 보기</button></div><div id="opsErr"></div></form>` : ""}
   <div id="opsOut">${REMOTE ? "" : opsSummary(localOps()).html}</div>
-  <div class="card"><h3>채널별 링크</h3><p class="muted">채널마다 아래 링크를 올리면 그 채널로 들어온 사람으로 세요.</p>
+  <div class="card"><h3>채널별 링크</h3><p class="muted">인스타그램 릴스·게시물(피드)·스토리마다 서로 다른 링크를 사용하면 유입과 파티 생성·메뉴 추천을 구분해서 셀 수 있어요. 일반적인 인스타그램 링크는 '미구분'으로 남습니다. 릴스와 일반 게시물의 본문 URL은 클릭이 어려울 수 있으므로 프로필 링크·스토리 링크 스티커·광고 링크로 연결해 주세요.</p>
     <ul class="list">${CHANNELS.map(([k, l]) => `<li class="row" style="align-items:center"><span><b>${l}</b><br><span class="muted chlink">${esc(base)}?src=${k}</span></span><button type="button" class="small" style="flex:0 0 auto" data-chlink="${esc(base)}?src=${k}">복사</button></li>`).join("")}</ul></div>`;
 }
 function localOps() { try { return { events: JSON.parse(safeGet(EVENTS_KEY) || "[]"), leads: JSON.parse(safeGet(LEADS_KEY) || "[]") }; } catch { return { events: [], leads: [] }; } }
