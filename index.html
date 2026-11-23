@@ -1387,7 +1387,9 @@ const SRC_KEY = "kook.src";
     const placement = (q.get("utm_term") || q.get("placement") || "").toLowerCase();
     const mapped = { instagram_reels: "instagram_reels", instagram_feed: "instagram_feed", instagram_stories: "instagram_stories",
       "ig_reels": "instagram_reels", "ig_feed": "instagram_feed", "ig_stories": "instagram_stories",
-      "instagram_story": "instagram_stories", "ig_story": "instagram_stories" };
+      "instagram_story": "instagram_stories", "ig_story": "instagram_stories",
+      // Meta Threads placement URL 동적 매개변수는 일반적으로 threads_stream이다.
+      "threads_stream": "threads", "threads_feed": "threads", "threads": "threads" };
     const fromPlacement = mapped[placement];
     const chosen = src && normChannel(src) !== "instagram" ? normChannel(src) : (fromPlacement || (src ? normChannel(src) : ""));
     if (chosen) sessionStorage.setItem(SRC_KEY, chosen);
