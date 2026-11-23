@@ -16,6 +16,18 @@ KAIST APP 창업 프로그램 프로젝트. 예전 이름은 '쿸(kook)'이며 2
 - 파티·취향 카드는 서버 저장소(Supabase 또는 Upstash Redis)에 저장된다. 둘 중 하나가 Vercel 프로젝트에 연결되어 있어야 한다(`/api/config`의 `"storage":true`, `"storage_kind"`로 종류 확인).
 - `index.html`을 파일로 직접 열면 그 브라우저에만 저장되는 미리보기로 동작한다. 실제 서비스는 배포 주소로 쓴다.
 
+## 인스타그램 릴스·피드·스토리 유입 분리 (2026-11-24)
+
+- 공식 웹 주소: https://mokku-party.vercel.app
+- **릴스:** https://mokku-party.vercel.app/?src=instagram_reels
+- **게시물(피드):** https://mokku-party.vercel.app/?src=instagram_feed
+- **스토리:** https://mokku-party.vercel.app/?src=instagram_stories
+- 기존 `?src=instagram` 유입은 **인스타그램 · 미구분**으로 집계하여 이전 기록과 링크 호환성 유지.
+- 운영 페이지 `https://mokku-party.vercel.app/#/ops`의 채널 목록 및 행동 퍼널에 위 세 유형을 별도 표기한다. 서버의 채널 정규화(`api/_lib.js`)와 브라우저(`index.html`)를 함께 변경하여 신규 파티 생성·초대·카드·메뉴 추천까지 같은 채널로 귀속한다.
+- 유료 Meta 광고는 `utm_term={{placement}}` 같은 **게재 위치 URL 매개변수**가 있으면 브라우저에서 Reels/Feed/Stories 분류로 해석할 수 있도록 구현하였다. 이때 특정 채널로 명시된 `src` 값은 우선한다. `utm_source`만 쓰는 이전 링크는 미구분으로 취급.
+- **주의:** Instagram 일반 릴스·피드 게시물 캡션에 적은 URL이 언제나 클릭 가능한 것은 아니다. 광고 목적지 링크·프로필 링크·스토리 링크 스티커처럼 실제로 클릭 가능한 경로에서 유입을 측정한다. 프로필에 동일한 하나의 링크만 놓으면 사람들이 릴스와 게시물 중 어디서 왔는지 자동 구분할 수 없다.
+- 과거 기록은 소급 재분류할 수 없으며, 코드 병합만으로 실제 Vercel Production 재배포 완료나 실사용 이벤트 검증을 의미하지 않는다. 배포 후 세 링크의 방문, 파티 생성, 메뉴 추천, CSV 내보내기를 점검한다.
+
 ## 공식 서비스 주소 및 유입 측정 (2026-11-24 기준)
 
 - **공식 주소:** https://mokku-party.vercel.app (Vercel 프로젝트 `Production`, `Valid Configuration` 화면 확인)
