@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>모꾸 — 좋아하는 사람들과 집에서 좀 더 특별하게</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;500;600&family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
 <style>
 /* 모꾸(구 쿸) v0.3 — 핀 보드: 하얀 바탕 위에 음식 핀을 모으듯 메뉴를 고른다 */
 :root{--paper:#FFFFFF;--ink:#211D1A;--quiet:#6F6862;--mist:#F1EFEC;--line:#E4E0DB;--berry:#B8336A;--berry-ink:#FFFFFF;--basil:#3F7D4E;--saffron:#F2B33D;--sky:#5C8DD6;--peach:#F7B39A;
@@ -790,6 +790,51 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
   #guestCard .guest-consent-box{padding:14px 15px 5px}
 }
 @media(prefers-reduced-motion:reduce){.guest-hero-visual{transform:none}}
+
+
+/* MOKKU · LICENSE-SAFE BILINGUAL TYPOGRAPHY 2026-11-23 */
+/* Hahmlet: SIL OFL Korean typeface served by Google Fonts.
+   The user's EARLYFONT Cucumber Salad file is NOT redistributed: its provider
+   requires separate permission for web embedding. Only local installations
+   can provide that display face until licensing is verified. */
+@font-face {
+  font-family: 'MokkuCucumberLocalKR';
+  src: local('EF_cucumbersalad');
+  font-style: normal;
+  font-weight: 400;
+  unicode-range: U+1100-11FF, U+3130-318F, U+AC00-D7A3, U+A960-A97F, U+D7B0-D7FF;
+}
+:root {
+  --mokku-font-ko: 'Hahmlet', 'Noto Serif KR', serif;
+  --mokku-font-mixed: 'cofo-raffine', 'CoFo Raffine', 'Hahmlet', 'Noto Serif KR', serif;
+  --mokku-font-headline: 'cofo-raffine', 'CoFo Raffine', 'MokkuCucumberLocalKR', 'Hahmlet', 'Noto Serif KR', serif;
+  --mokku-font-english: 'cofo-raffine', 'CoFo Raffine', 'Cormorant Garamond', Georgia, serif;
+}
+/* The Adobe CoFo Raffine family is ready in CSS. A valid Adobe Fonts Web
+   Project stylesheet must be supplied by the site owner for visitors
+   to actually receive Adobe's licensed webfont. */
+body, body button, body input, body select, body textarea,
+body :is(h1,h2,h3,h4,h5,h6,p,span,div,li,label,legend,summary,
+  b,strong,small,em,blockquote,output,th,td,option,button,
+  .btn,.chip,.q,.display,.brand,.stepper,.hint,.muted,.mood,.pick,
+  .host-cover,.host-invite,.host-details,.guest-hero,.guest-form,.create-form) {
+  font-family: var(--mokku-font-mixed) !important;
+}
+body :is(h1,h2,h3,h4,.brand,.mood>span>b,.pin-cap b,.host-cover h1,
+  .host-invite h3,.guest-hero h1,.guest-form-intro h2,
+  .guest-form .q,.party-name-label,.create-form label,
+  .create-form legend,.host-details summary) {
+  font-family: var(--mokku-font-headline) !important;
+}
+body :is(.script,.foot-line), body .brand .script,
+body .guest-hero-copy .script, body .guest-form-intro .script,
+body .create-form::before, body .cta-card .script {
+  font-family: var(--mokku-font-english) !important;
+}
+body .code, body .code *, body input[autocomplete="one-time-code"] {
+  font-family: ui-monospace, Menlo, Consolas, monospace !important;
+}
+/* No changes to font sizes, colors, spacing or feature behavior. */
 
 </style>
 </head>
