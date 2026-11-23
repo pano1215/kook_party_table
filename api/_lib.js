@@ -170,9 +170,17 @@ async function storageCheck() {
 const MAX_CARDS = 12;
 
 // ---- 유입 경로(채널)와 핵심 행동 기록
-// 링크의 ?src= 값을 정해진 채널 키로 맞춘다. 정해진 6개 + 초대받은 게스트(invite) + 직접 방문(direct) + 기타(other)
-const CHANNELS = [["instagram", /^(instagram|insta|ig|인스타)/i], ["friend", /^(friend|지인|ref)/i], ["kakao", /^(kakao|openchat|오픈챗|카카오)/i],
-  ["threads", /^(threads|스레드)/i], ["naver_cafe", /^(naver_?cafe|ncafe|cafe|카페)/i], ["naver_blog", /^(naver_?blog|nblog|blog|블로그)/i]];
+// 링크의 ?src= 값을 인스타그램 소재별/그 외 채널별 키로 정규화한다.
+// 구체적인 Instagram 분류를 먼저 확인해 기존 instagram 전체 분류에 흡수되지 않도록 한다.
+const CHANNELS = [
+  ["instagram_reels", /^(instagram[_-]?reels?|ig[_-]?reels?|reels?)$/i],
+  ["instagram_feed", /^(instagram[_-]?(feed|posts?)|ig[_-]?(feed|posts?))$/i],
+  ["instagram_stories", /^(instagram[_-]?(story|stories)|ig[_-]?(story|stories)|stories)$/i],
+  ["instagram", /^(instagram|insta|ig|인스타)/i],
+  ["friend", /^(friend|지인|ref)/i], ["kakao", /^(kakao|openchat|오픈챗|카카오)/i],
+  ["threads", /^(threads|스레드)/i], ["naver_cafe", /^(naver_?cafe|ncafe|cafe|카페)/i],
+  ["naver_blog", /^(naver_?blog|nblog|blog|블로그)/i]
+];
 const FIXED = new Set(["invite", "direct", "other"]);
 function normChannel(raw) {
   const v = String(raw || "").trim().slice(0, 30);
