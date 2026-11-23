@@ -793,17 +793,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--olive);box-shadow:0 0
 
 
 /* MOKKU / HANDWRITTEN TYPOGRAPHY 2026-11-23
-   Visual typography only. No JS, form logic, content or layouts changed.
-   Official Google Fonts: Nanum Pen Script (handwritten Korean). */
-:root {
-  --mokku-diary-hand: 'Nanum Pen Script', 'Gowun Batang', 'Noto Sans KR', sans-serif;
-}
-body {
-  font-family: var(--mokku-diary-hand) !important;
-  font-size: 19px;
-  line-height: 1.65;
-  letter-spacing: 0;
-}
+   Font family only — preserves all existing text sizes, spacing, layout and JS.
+   Google Fonts Nanum Pen Script for handwritten Korean UI. */
+:root { --mokku-diary-hand: 'Nanum Pen Script', 'Gowun Batang', 'Noto Sans KR', sans-serif; }
+body { font-family: var(--mokku-diary-hand) !important; }
 body :is(
   h1,h2,h3,h4,h5,h6,p,span,div,li,b,strong,small,em,blockquote,
   label,legend,summary,output,button,input,textarea,select,option,
@@ -811,36 +804,15 @@ body :is(
   .host-cover,.host-invite,.host-preferences,.host-details,
   .guest-hero,.guest-form,.create-form,.mood,.pick,.note,.stat,
   .hint,.muted,.ask
-) {
-  font-family: var(--mokku-diary-hand) !important;
-}
-/* Handwritten glyphs need a little more breathing space than serif/sans UI text. */
-body :is(input,textarea,select,button,.btn,.chip,.field-btn) {
-  font-size: max(17px, 1em);
-  letter-spacing: 0;
-}
-body :is(.hint,.muted,.menu-desc,.pick-name,.host-meta,.guest-meta) {
-  font-size: max(15px, 1em);
-  line-height: 1.6;
-}
-body :is(label,legend,.flabel,.q,.party-name-label) {
-  font-size: max(19px, 1em);
-  letter-spacing: 0;
-}
-body .brand { font-size: 31px; letter-spacing: 0; }
-body .mood>span>b { font-size: 27px; letter-spacing: 0; }
-body h1,body h2,body h3 { letter-spacing: 0; }
-body .hello h1 { letter-spacing: -.01em; }
-/* Preserve the English italic accents that are part of the original visual identity. */
+) { font-family: var(--mokku-diary-hand) !important; }
+/* Preserve original English editorial accents. */
 body :is(.script,.foot-line),
-body .brand .script,
-body .cta-card .script,
-body .guest-hero-copy .script,
-body .guest-form-intro .script,
+body .brand .script, body .cta-card .script,
+body .guest-hero-copy .script, body .guest-form-intro .script,
 body .create-form::before {
   font-family: 'Cormorant Garamond', Georgia, serif !important;
 }
-/* Invitation/host codes must remain equally spaced for accurate transcription. */
+/* Preserve equal-width invitation codes. */
 body .code, body .code * {
   font-family: ui-monospace, Menlo, Consolas, monospace !important;
 }
