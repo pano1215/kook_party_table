@@ -836,6 +836,10 @@ body .code, body .code *, body input[autocomplete="one-time-code"] {
 }
 /* No changes to font sizes, colors, spacing or feature behavior. */
 
+.zero-card-pop{position:fixed;margin:auto;width:min(420px,calc(100% - 36px));max-height:calc(100dvh - 36px);overflow:auto;padding:28px 22px 22px;text-align:center;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 50px #22384a40}
+.zero-card-pop::backdrop{background:rgba(34,56,74,.42)}
+.zero-card-pop h2{font-size:21px;margin:12px 0}.zero-card-pop .muted{margin:10px 0;text-wrap:balance}
+.share-pop .box{max-height:calc(100dvh - 40px);overflow-y:auto}
 </style>
 </head>
 <body>
@@ -1176,7 +1180,7 @@ body .code, body .code *, body input[autocomplete="one-time-code"] {
   const PLAN_SCHEMA = { title: "한 상 이름(예: 가을 저녁 와인 한 상)", concept: "이 한 상의 분위기와 구성 이유 두세 문장",
     menus: [{ name: "메뉴 이름", role: ROLES.join(" | "), method: METHODS.join(" | "), estimated_cost: "이 인원 기준 예상 비용(원, 숫자만)",
       prep_minutes: "준비에 드는 분(숫자만). 배달은 0", ingredients: ["재료와 양(직접 조리·밀키트). 배달은 대표 재료"],
-      allergens: ["이 메뉴에 들어가는 알레르기 성분을 모두"], why: "누구의 어떤 취향을 반영했는지(이름 없이 낸 의견은 '한 분이'로)", desc: "먹고 싶어지는 메뉴 묘사 한두 문장. 맛·향·식감·온도를 눈에 그려지게, 60자 안팎. 손님 이름이나 고른 이유는 쓰지 않는다",
+      allergens: ["이 메뉴에 들어가는 알레르기 성분을 모두"], why: "누구의 어떤 취향을 반영했는지(이름 없이 낸 의견은 '한 분이'로)", desc: "먹고 싶어지는 메뉴 묘사 한두 문장. 맛·향·식감·온도를 눈에 그려지게, 60자 안팎. 게스트 이름이나 고른 이유는 쓰지 않는다",
       plating_tip: "있어 보이게 담는 방법 한 줄", steps: ["직접 조리일 때만 조리 단계. 아니면 빈 배열"], search_keyword: "밀키트·배달일 때 검색할 말" }],
     host_tips: ["호스트가 미리 알면 좋은 것"] };
   function planPrompt(party, agg, avoid, recent) {
@@ -1231,7 +1235,7 @@ body .code, body .code *, body input[autocomplete="one-time-code"] {
     { name: "연어 카르파초", desc: "얇게 저민 연어에 레몬과 올리브유를 두른 차가운 한 접시. 케이퍼가 짭조름하게 입맛을 깨워요.", role: "사이드", method: "직접 조리", estimated_cost: 18000, prep_minutes: 15, ingredients: ["생연어 200g", "케이퍼 1큰술", "레몬 1개", "올리브유 3큰술", "적양파 1/2개"], allergens: [], why: "알레르기 성분이 적은 메뉴로 모두가 함께 먹을 수 있어요", plating_tip: "흰 접시에 얇게 펴 담고 레몬 제스트를 뿌려요", steps: ["연어를 얇게 저민다", "적양파를 얇게 썰어 찬물에 담근다", "접시에 연어를 펴고 양파·케이퍼를 올린다", "레몬즙과 올리브유를 뿌린다"] },
     { name: "버섯 크림 리조또", desc: "버섯 향이 깊게 밴 크림에 쌀알이 알맞게 씹히는 리조또. 파르메산을 눈처럼 뿌려 고소하게 마무리해요.", role: "메인", method: "직접 조리", estimated_cost: 14000, prep_minutes: 35, ingredients: ["쌀 2컵", "양송이 8개", "생크림 200ml", "파르메산 치즈 30g", "양파 1개"], allergens: ["우유"], why: "맵지 않아 누구나 편하게 먹을 수 있어요", plating_tip: "오목한 접시에 담고 파르메산을 갈아 올려요", steps: ["양파와 버섯을 볶는다", "쌀을 넣고 투명해질 때까지 볶는다", "물을 나눠 부으며 18분 익힌다", "생크림과 치즈를 넣어 마무리한다"] },
     { name: "과일 치즈 플래터", desc: "제철 과일과 말랑한 브리 치즈, 바삭한 크래커를 한 판에. 꿀을 살짝 뿌리면 달콤하고 고소해요.", role: "디저트", method: "직접 조리", estimated_cost: 16000, prep_minutes: 15, ingredients: ["제철 과일 3종", "브리 치즈 1개", "크래커 1통", "꿀 2큰술"], allergens: ["우유", "밀"], why: "식사 뒤 이야기를 이어 갈 디저트예요", plating_tip: "나무 도마에 색이 다른 과일을 번갈아 놓아요", steps: ["과일을 한입 크기로 자른다", "치즈를 웨지 모양으로 자른다", "도마에 과일, 치즈, 크래커를 나눠 담는다"] },
-    { name: "하이볼과 논알콜 칵테일", desc: "얼음 가득 채운 잔에 레몬 향이 톡 쏘는 하이볼. 술을 안 마시는 손님도 진저에일로 함께 건배해요.", role: "음료", method: "직접 조리", estimated_cost: 15000, prep_minutes: 10, ingredients: ["위스키 200ml", "탄산수 1L", "레몬 2개", "논알콜 진저에일 2캔"], allergens: [], why: "술을 마시는 분과 안 마시는 분이 함께 즐길 수 있어요", plating_tip: "같은 잔에 레몬 슬라이스를 넣어 두 음료를 함께 내요", steps: ["잔에 얼음을 채운다", "하이볼은 위스키 1 : 탄산수 3으로 섞는다", "논알콜 잔에는 진저에일과 레몬을 넣는다"] },
+    { name: "하이볼과 논알콜 칵테일", desc: "얼음 가득 채운 잔에 레몬 향이 톡 쏘는 하이볼. 술을 안 마시는 게스트도 진저에일로 함께 건배해요.", role: "음료", method: "직접 조리", estimated_cost: 15000, prep_minutes: 10, ingredients: ["위스키 200ml", "탄산수 1L", "레몬 2개", "논알콜 진저에일 2캔"], allergens: [], why: "술을 마시는 분과 안 마시는 분이 함께 즐길 수 있어요", plating_tip: "같은 잔에 레몬 슬라이스를 넣어 두 음료를 함께 내요", steps: ["잔에 얼음을 채운다", "하이볼은 위스키 1 : 탄산수 3으로 섞는다", "논알콜 잔에는 진저에일과 레몬을 넣는다"] },
   ];
   function demoPlan(party, avoid, recent) {
     const av = new Set(avoid || []), rc = new Set(recent || []);
@@ -1499,9 +1503,9 @@ function letterSent(edited) {
   document.querySelector(".letter-pop")?.remove();
   const el = document.createElement("div");
   el.className = "letter-pop"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite");
-  el.innerHTML = `<div class="box"><span class="env" aria-hidden="true"><svg width="64" height="50" viewBox="0 0 64 50"><rect x="3" y="6" width="58" height="40" rx="4" fill="#FFF8ED" stroke="#35566E" stroke-width="1.8"></rect><path d="M4 8 L32 30 L60 8" fill="none" stroke="#35566E" stroke-width="1.8" stroke-linejoin="round"></path><path d="M32 40 C 25 35, 24 31, 26.5 28.7 C 28.5 27, 31 28, 32 30 C 33 28, 35.5 27, 37.5 28.7 C 40 31, 39 35, 32 40 Z" fill="#E9A6A1"></path></svg></span><b>편지가 전달되었어요</b><span class="muted">${edited ? "고친 취향이 호스트에게 다시 전해졌어요." : "호스트가 내 취향을 반영해 메뉴를 준비할 거예요."}</span></div>`;
+  el.innerHTML = `<div class="box"><span class="env" aria-hidden="true"><svg width="64" height="50" viewBox="0 0 64 50"><rect x="3" y="6" width="58" height="40" rx="4" fill="#FFF8ED" stroke="#35566E" stroke-width="1.8"></rect><path d="M4 8 L32 30 L60 8" fill="none" stroke="#35566E" stroke-width="1.8" stroke-linejoin="round"></path><path d="M32 40 C 25 35, 24 31, 26.5 28.7 C 28.5 27, 31 28, 32 30 C 33 28, 35.5 27, 37.5 28.7 C 40 31, 39 35, 32 40 Z" fill="#E9A6A1"></path></svg></span><b>편지가 전달되었어요</b><span class="muted">${edited ? "고친 취향이 호스트에게 다시 전해졌어요." : "호스트가 내 취향을 반영해 메뉴를 준비할 거예요."}</span><span class="muted" style="color:#536B57">호스트에게 ‘테이블 꾸미기’를 눌러 달라고 살짝 콕! 부탁해 볼까요?</span></div>`;
   const close = () => el.remove();
-  el.onclick = close; document.body.appendChild(el); setTimeout(close, 2800);
+  el.onclick = close; document.body.appendChild(el); setTimeout(close, 6000);
 }
 // 가운데에 잠깐 뜨는 안내 창(누르거나 2.6초 뒤 닫힘). 메뉴를 다시 추천했을 때 쓴다
 function noticePop(title, sub) {
@@ -1712,8 +1716,8 @@ function bindNew() {
   function people() {
     const n = num("#pPeople");
     if (n >= K.MAX_PEOPLE) hint("#peopleHint", `호스트 포함 ${K.MAX_PEOPLE}명까지예요. 모꾸는 ${K.MAX_PEOPLE}명 이하 작은 모임용이에요.`, true);
-    else if (n <= K.MIN_PEOPLE) hint("#peopleHint", `최소 ${K.MIN_PEOPLE}명(호스트와 손님 1명)이에요.`, true);
-    else hint("#peopleHint", `손님 ${n - 1}명을 초대해요.`);
+    else if (n <= K.MIN_PEOPLE) hint("#peopleHint", `최소 ${K.MIN_PEOPLE}명(호스트와 게스트 1명)이에요.`, true);
+    else hint("#peopleHint", `게스트 ${n - 1}명을 초대해요.`);
   }
   function menus() {
     const n = num("#pMenus");
@@ -2065,8 +2069,8 @@ function hostView(id) {
   if (!["guests", "plan", "prep"].includes(ui.tab)) ui.tab = "guests";
   const body = { guests: guestsTab, plan: planTab, prep: prepTab }[ui.tab];
   const desc = {
-    guests: "<b>① 게스트 취향</b> — 초대 링크를 보내 손님에게 취향 카드를 받아요. 손님이 카드를 써야 추천 메뉴에 취향이 반영돼요.",
-    plan: "<b>② 테이블 꾸미기</b> — 인원·예산·분위기와 손님 취향에 맞춘 메뉴 조합을 알려드려요. 알러지, 비추 메뉴는 자동으로 제외하니 걱정 마세요.",
+    guests: "<b>① 게스트 취향</b> — 초대 링크를 보내 게스트에게 취향 카드를 받아요. 게스트가 카드를 써야 추천 메뉴에 취향이 반영돼요.",
+    plan: "<b>② 테이블 꾸미기</b> — 인원·예산·분위기와 게스트 취향에 맞춘 메뉴 조합을 알려드려요. 알러지, 비추 메뉴는 자동으로 제외하니 걱정 마세요.",
     prep: "<b>③ 장보기·배달</b> — 직접 만드는 메뉴는 재료를 추천하고, 밀키트·배달 메뉴는 쇼핑·배달 앱으로 연결돼요.",
   };
   const ended = "";
@@ -2096,7 +2100,7 @@ function guestsTab(p, agg) {
   return `
   <div class="card host-invite"><div class="host-invite-inner"><h3>게스트 초대</h3>
     <p class="host-invite-code">초대 코드 <span class="code">${esc(p.invite_code)}</span></p>
-    <p class="muted">${REMOTE ? "링크를 받은 손님은 어떤 휴대폰에서든 카드를 쓸 수 있어요. 들어온 카드는 이 화면에 저절로 나타나요." : "이 HTML 앱은 파티를 이 브라우저에만 저장해요. 같은 브라우저의 새 탭에서 게스트 화면을 열어 휴대폰 여러 대처럼 시연할 수 있어요."}</p>
+    <p class="muted">${REMOTE ? "링크를 받은 게스트는 어떤 휴대폰에서든 카드를 쓸 수 있어요. 들어온 카드는 이 화면에 저절로 나타나요." : "이 HTML 앱은 파티를 이 브라우저에만 저장해요. 같은 브라우저의 새 탭에서 게스트 화면을 열어 휴대폰 여러 대처럼 시연할 수 있어요."}</p>
     <div class="row host-invite-actions"><button type="button" id="copyLink">초대 링크 보내기</button><a class="btn" href="${esc(inviteUrl(p))}" target="_blank" rel="noopener">새 탭에서 게스트 화면 열기</a></div>
     <p class="muted host-invite-progress">받은 취향 카드 <b>${agg.guestCount}/${want}</b>장</p></div><div class="host-invite-doodle" aria-hidden="true"><img src="assets/toast-sticker.webp" alt=""><span>✳</span></div></div>
   <div class="host-preferences"><h2>모아진 취향</h2>
@@ -2107,7 +2111,7 @@ function guestsTab(p, agg) {
   ${likes.length ? `<div class="note ok"><b>있으면 신나는 음식</b><ul>${likes.map(([l, n]) => `<li>${esc(l)} (${n}명)</li>`).join("")}</ul></div>` : ""}
   </div>
   ${agg.guestCount ? `<p class="host-preference-footer">매운 정도: ${esc(spiceLabel(agg.spice))}${drinks ? ` · 음료: ${esc(drinks)}` : ""}</p>` : ""}
-  ${p.guests.some((g) => g.message) ? `<div class="card host-messages"><b>손님이 남긴 한마디</b><ul class="list msgs">${p.guests.filter((g) => g.message).map((g) => `<li>"${esc(g.message)}" <span class="muted">— ${esc(g.anonymous ? K.ANON : g.nickname)}</span></li>`).join("")}</ul></div>` : ""}
+  ${p.guests.some((g) => g.message) ? `<div class="card host-messages"><b>게스트가 남긴 한마디</b><ul class="list msgs">${p.guests.filter((g) => g.message).map((g) => `<li>"${esc(g.message)}" <span class="muted">— ${esc(g.anonymous ? K.ANON : g.nickname)}</span></li>`).join("")}</ul></div>` : ""}
   </div>
   ${safeGet(`kook.shared.${p.id}`) ? interviewCard("host", p.id) : ""}
   <details class="card host-details"><summary>링크를 쓰지 않는 게스트 대신 입력하기</summary>
@@ -2139,17 +2143,17 @@ function openShare(p, copied, hostCodeOnce) {
     <button type="button" class="icon-btn sh-close" id="shClose" aria-label="닫기"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 4 L14 14 M14 4 L4 14"></path></svg></button>
     <span class="sh-art" aria-hidden="true"><svg width="64" height="50" viewBox="0 0 64 50"><rect x="3" y="6" width="58" height="40" rx="4" fill="#FFF8ED" stroke="#35566E" stroke-width="1.8"></rect><path d="M4 8 L32 30 L60 8" fill="none" stroke="#35566E" stroke-width="1.8" stroke-linejoin="round"></path><path d="M32 40 C 25 35, 24 31, 26.5 28.7 C 28.5 27, 31 28, 32 30 C 33 28, 35.5 27, 37.5 28.7 C 40 31, 39 35, 32 40 Z" fill="#E9A6A1"></path></svg></span>
     <h2 id="shTitle">${copied ? "초대 링크가 복사됐어요" : "초대 링크가 준비됐어요"}</h2>
-    <p class="muted">손님에게 보내면 취향 카드를 받을 수 있어요. 어디로 보낼까요?</p>
+    <p class="muted">게스트에게 보내면 취향 카드를 받을 수 있어요.</p>
+    <p class="muted">취향 카드를 받으면 호스트는 게스트에 맞는 테이블 꾸미기 추천을 받을 수 있어요.</p>
     <input type="text" readonly id="shUrl" aria-label="초대 링크" value="${esc(url)}">
     <div class="sh-btns">
       <button type="button" class="sh kakao" id="shKakao"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3 C 5.6 3, 2 5.800, 2 9.200 C 2 11.400, 3.500 13.300, 5.700 14.400 L 5 17.300 L 8.300 15.200 C 8.900 15.300, 9.400 15.400, 10 15.400 C 14.400 15.400, 18 12.600, 18 9.200 C 18 5.800, 14.400 3, 10 3 Z" fill="#191919"></path></svg>카카오톡으로 보내기</button>
-      <button type="button" class="sh insta" id="shInsta"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="4"></rect><circle cx="10" cy="10" r="3.300"></circle><circle cx="14.200" cy="5.800" r=".6" fill="currentColor"></circle></svg>인스타그램으로 보내기</button>
       <button type="button" class="sh" id="shCopy"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.500"></rect><path d="M13 7 V5.500 A2.500 2.500 0 0 0 10.500 3 H5.500 A2.500 2.500 0 0 0 3 5.500 V10.500 A2.500 2.500 0 0 0 5.500 13 H7"></path></svg>링크 복사하기</button>
     </div>
     <p class="sh-status" id="shStatus" role="status" aria-live="polite"></p>
   </div>`;
   const prev = document.activeElement;
-  const close = () => { el.remove(); document.removeEventListener("keydown", onKey); if (prev && prev.focus && document.contains(prev)) prev.focus(); };
+  const close = () => { el.remove(); document.removeEventListener("keydown", onKey); if (location.hash === "#/host/" + p.id) { ui.tab = "plan"; render(); document.querySelector('[data-tab="plan"]')?.focus({preventScroll:true}); window.scrollTo(0,0); } else if (prev && prev.focus && document.contains(prev)) prev.focus(); };
   const onKey = (e) => { if (e.key === "Escape") close(); };
   const say = (t) => { el.querySelector("#shStatus").textContent = t; };
   el.onclick = (e) => { if (e.target === el) close(); };
@@ -2166,17 +2170,6 @@ function openShare(p, copied, hostCodeOnce) {
     try { const K_ = await loadKakao(); K_.Share.sendDefault({ objectType: "text", text: msg, link: { mobileWebUrl: url, webUrl: url }, buttonTitle: "취향 알려 주기" }); say("카카오톡 보내기 창을 열었어요."); return; } catch {}
     if (navigator.share) { try { await navigator.share({ title: p.name, text: msg, url }); say("공유 창에서 카카오톡을 골라 보내 주세요."); return; } catch (e) { if (e && e.name === "AbortError") return; } }
     const ok = await copyText(url); say(ok ? "링크를 복사했어요. 카카오톡 대화방에 붙여 넣어 보내 주세요." : "위 링크를 복사해 카카오톡 대화방에 붙여 넣어 주세요.");
-  };
-  el.querySelector("#shInsta").onclick = async () => {
-    countShare(p, "instagram");
-    const ok = await copyText(url);
-    // 휴대폰: 브라우저는 인스타그램 앱의 로그인을 모르기 때문에 웹 주소를 열면 로그인 화면이 뜬다. 기기의 공유 창에서 인스타그램 앱을 고르게 한다
-    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && navigator.share) {
-      try { await navigator.share({ title: p.name, text: msg, url }); say("공유 창에서 인스타그램을 골라 보내 주세요."); return; }
-      catch (e) { if (e && e.name === "AbortError") { say(ok ? "링크는 복사해 뒀어요. 인스타그램 메시지에 붙여 넣어도 돼요." : ""); return; } }
-    }
-    window.open("https://www.instagram.com/direct/inbox/", "_blank", "noopener");
-    say(ok ? "링크를 복사하고 인스타그램 메시지를 열었어요. 대화방에 붙여 넣어 보내 주세요." : "인스타그램 메시지를 열었어요. 위 링크를 복사해 붙여 넣어 주세요.");
   };
   el.querySelector(copied ? "#shKakao" : "#shCopy").focus();
 }
@@ -2274,12 +2267,38 @@ function openMenu(p, m) {
   el.querySelectorAll("[data-copy]").forEach((a) => (a.onclick = () => { copyText(a.dataset.copy); track("delivery_click", { party: p.id }); }));
   el.querySelector("#mnClose").focus(); loadImages();
 }
+let zeroCardEntry = null;
+function closeZeroCardPop() {
+  document.querySelector("#zeroCardPop")?.close();
+}
+function openZeroCardPop(p, proceed) {
+  if (document.querySelector("#zeroCardPop")) return;
+  const el = document.createElement("dialog");
+  el.id = "zeroCardPop"; el.className = "zero-card-pop";
+  el.setAttribute("aria-labelledby", "zeroCardTitle");
+  el.innerHTML = `<button type="button" class="icon-btn sh-close" data-wait aria-label="닫기">×</button>
+    <svg aria-hidden="true" width="90" height="80" viewBox="0 0 100 88"><circle cx="50" cy="44" r="34" fill="#F0EDE3" stroke="#B8B9A8" stroke-width="1.5"/><circle cx="50" cy="44" r="24" fill="#FCFAF5" stroke="#A1AD99" stroke-width="1.5"/><path d="M50 53 C27 39 41 28 50 39 C59 28 73 39 50 53Z" fill="#D6A29A"/><g stroke="#506655" stroke-width="2" stroke-linecap="round" fill="none"><path d="M7 21 V38 Q7 45 12 45 Q17 45 17 38 V21 M12 21 V72 M12 21 V39"/><path d="M88 21 Q80 27 82 46 H88 V72 M88 21 V46"/></g></svg>
+    <h2 id="zeroCardTitle">우리 모임에 어울리는 테이블을 꾸며볼까요?</h2>
+    <p class="muted">아직 도착한 취향 카드가 없어요.</p>
+    <p class="muted">먼저 모임에 잘 어울리는 메뉴를 추천해 드릴게요.</p>
+    <p class="muted" style="color:#536B57">게스트의 취향 카드가 도착하면, 모두의 취향을 담은 특별한 테이블을 꾸며봐요.</p>
+    <div class="sh-btns"><button type="button" class="primary sh" data-proceed>먼저 테이블 꾸며보기</button><button type="button" class="sh" data-wait>게스트 취향 카드 기다리기</button></div>`;
+  const valid = () => location.hash === "#/host/" + p.id && ui.tab === "plan";
+  const wait = () => { el.close(); if (valid()) { ui.tab = "guests"; render(); } };
+  el.addEventListener("close", () => el.remove(), {once:true});
+  el.addEventListener("cancel", e => { e.preventDefault(); wait(); });
+  el.querySelectorAll("[data-wait]").forEach(b => b.onclick = wait);
+  el.querySelector("[data-proceed]").onclick = () => { el.close(); if (valid()) proceed(); };
+  document.body.appendChild(el); el.showModal();
+}
 function bindPlanTab(p, agg) {
   document.querySelectorAll("[data-menu]").forEach((card) => (card.onclick = (e) => {
     if (e.target.closest("input,label,a,details,summary") || (e.target.closest("button") && !e.target.closest("[data-open-menu]"))) return;   // 확인란 같은 다른 조작은 그대로
     const m = (p.plan.menus || []).find((x) => x.id === card.dataset.menu); if (m) openMenu(p, m);
   }));
   const run = async (avoid, recent = []) => {
+    if (ui.busy || location.hash !== "#/host/" + p.id || ui.tab !== "plan") return;
+    p = getParty(p.id) || p; agg = K.aggregate(p.guests);
     const before = ((p.plan && p.plan.menus) || []).map((m) => m.name), y = window.scrollY;
     ui.busy = true; render(); window.scrollTo(0, y);
     try { await recommend(p, agg, avoid, recent); } catch (e) { ui.busy = false; render(); $("#recErr").innerHTML = `<p class="err">${esc(e.message)}</p>${e.raw ? `<details><summary>모델 원문 응답</summary><pre style="white-space:pre-wrap">${esc(e.raw)}</pre></details>` : ""}`; return; }
@@ -2292,8 +2311,14 @@ function bindPlanTab(p, agg) {
     }
   };
   // 다시 꾸미기: 지금 메뉴와 그 앞 추천을 '직전 메뉴'로 넘겨 다른 조합이 나오게 한다
-  $("#recBtn").onclick = () => { const cur = ((p.plan && p.plan.menus) || []).map((m) => m.name); run([], [...new Set(cur.concat((p.plan && p.plan.recent) || []))].slice(0, 12)); };
-  const r = $("#redoBtn"); if (r) r.onclick = () => run(JSON.parse(r.dataset.avoid));
+  const requestPlan = () => { const latest = getParty(p.id) || p; const cur = ((latest.plan && latest.plan.menus) || []).map(m => m.name); run([], [...new Set(cur.concat((latest.plan && latest.plan.recent) || []))].slice(0, 12)); };
+  const guarded = action => { const latest = getParty(p.id) || p; if (K.aggregate(latest.guests).guestCount === 0) openZeroCardPop(latest, action); else action(); };
+  $("#recBtn").onclick = () => guarded(requestPlan);
+  if (!agg.guestCount && !ui.busy && zeroCardEntry !== p.id) {
+    zeroCardEntry = p.id;
+    openZeroCardPop(p, () => { if (!(getParty(p.id) || p).plan) requestPlan(); });
+  } else if (agg.guestCount) { zeroCardEntry = null; closeZeroCardPop(); }
+  const r = $("#redoBtn"); if (r) r.onclick = () => guarded(() => run(JSON.parse(r.dataset.avoid)));
   document.querySelectorAll("[data-consent]").forEach((cb) => (cb.onchange = async () => {
     const id = cb.dataset.consent, keep = cb.checked;
     await transact((d) => {
@@ -2368,6 +2393,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && narrow()
 function render() {
   setMode(); renderSide();
   const h = location.hash || "#/";
+  if (ui.tab !== "plan" || h !== "#/host/" + zeroCardEntry) { zeroCardEntry = null; closeZeroCardPop(); }
   const app = $("#app");
   let m;
   if ((m = h.match(/^#\/host\/([a-f0-9]{16})$/))) {
