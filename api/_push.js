@@ -32,15 +32,23 @@ function validSubscription(s) {
 async function saveSubscriptions(p, list) {
   await L.cmd("SET",storageKey(p.id),JSON.stringify(list.slice(0,8)), "EXAT", String(L.expireAt(p)));
 }
-async function notifyNewCard(p) {
+function cardNotificationBody(card) {
+  // 익명 게스트의 별명은 알림/잠금 화면에 노출하지 않는다.
+  const nickname = typeof card?.nickname === "string"
+    ? card.nickname.replace(/[\\u0000-\\u001f\\u007f-\\u009f]/g, "").trim().slice(0, 20)
+    : "";
+  const subject = card?.anonymous || !nickname ? "손님" : nickname;
+  return `${subject}의 취향이 도착했어요. 이제 메뉴 추천으로 테이블을 꾸며주세요.`;
+}
+async function notifyNewCard(p, card) {
   if (!configured()) return;
   let subs;
   try { subs = await getSubscriptions(p); } catch { return; }
   if (!subs.length) return;
   try { setup(); } catch { return; }
   const payload = JSON.stringify({
-    title:"모꾸 · 새로운 취향 카드 💌",
-    body:"손님이 취향 카드를 보냈어요. 모임에서 확인해 주세요.",
+    title:"모꾸 · 취향 카드 도착 💌",
+    body:cardNotificationBody(card),
     url:"/#/host/" + p.id,
     tag:"mokku-card-" + p.id
   });
@@ -56,4 +64,4 @@ async function notifyNewCard(p) {
     } catch {}
   }
 }
-module.exports={configured,setup,validSubscription,getSubscriptions,saveSubscriptions,notifyNewCard};
+module.exports={configured,setup,validSubscription,getSubscriptions,saveSubscriptions,cardNotificationBody,notifyNewCard};
