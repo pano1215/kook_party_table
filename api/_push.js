@@ -38,7 +38,7 @@ function cardNotificationBody(card) {
     ? card.nickname.replace(/[\u0000-\u001f\u007f-\u009f]/g, "").trim().slice(0, 20)
     : "";
   const subject = card?.anonymous || !nickname ? "손님" : nickname;
-  return `${subject}의 취향이 도착했어요. 이제 메뉴 추천으로 테이블을 꾸며주세요.`;
+  return `${subject}의 취향이 도착했어요. 이제 테이블 꾸미기로 메뉴를 추천받으세요`;
 }
 async function notifyNewCard(p, card) {
   if (!configured()) return;
