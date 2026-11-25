@@ -4,8 +4,8 @@ const L = require("./_lib");
 const webpush = require("web-push");
 const VAPID_PUBLIC_KEY = (process.env.VAPID_PUBLIC_KEY || "").trim();
 const VAPID_PRIVATE_KEY = (process.env.VAPID_PRIVATE_KEY || "").trim();
-const VAPID_SUBJECT = (process.env.VAPID_SUBJECT || "mailto:notifications@mokku-party.vercel.app").trim();
-function configured() { return !!(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY && VAPID_SUBJECT); }
+const VAPID_SUBJECT = (process.env.VAPID_SUBJECT || "").trim();
+function configured() { return !!(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY && /^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$|^https:\/\//i.test(VAPID_SUBJECT)); }
 function setup() {
   if (!configured()) throw new Error("푸시 알림이 아직 준비되지 않았어요.");
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
