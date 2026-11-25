@@ -12,7 +12,9 @@ module.exports = async(req,res)=>{
       return L.send(res,403,{error:"호스트만 알림을 설정할 수 있어요."});
     }
     if (req.method==="GET") {
-      return L.send(res,200,{enabled:P.configured(),publicKey:P.configured()?process.env.VAPID_PUBLIC_KEY:""});
+      const fingerprint = u.searchParams.get("fingerprint") || "";
+      const subscribed = /^[a-f0-9]{64}$/.test(fingerprint) && (await P.getSubscriptions(p)).some(s=>L.sha256(s.endpoint)===fingerprint);
+      return L.send(res,200,{enabled:P.configured(),publicKey:P.configured()?process.env.VAPID_PUBLIC_KEY:"",subscribed});
     }
     if (!["POST","DELETE"].includes(req.method)) return L.send(res,405,{error:"지원하지 않는 요청이에요."});
     if (!P.configured()) return L.send(res,503,{error:"푸시 알림 서버 설정이 아직 완료되지 않았어요."});
