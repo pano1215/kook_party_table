@@ -2130,8 +2130,11 @@ async function bindHostPush(p) {
     try {
       const reg = await navigator.serviceWorker.register("/sw.js", {scope:"/"});
       const sub = await reg.pushManager.getSubscription();
-      if (btn.isConnected) btn.textContent = sub ? "🔕 이 기기 알림 끄기" : "🔔 새 카드 알림 받기";
-      if (sub) say("이 기기의 알림 수신이 설정되어 있어요.");
+      const fingerprint = sub ? sha256(sub.endpoint) : "";
+      const st = await api("/api/push?party=" + p.id + (fingerprint ? "&fingerprint=" + fingerprint : ""), {headers:{"x-host-code":hostCode(p.id)}});
+      if (btn.isConnected) btn.textContent = st.subscribed ? "🔕 이 모임 알림 끄기" : "🔔 새 카드 알림 받기";
+      btn.dataset.subscribed = st.subscribed ? "1" : "0";
+      say(st.subscribed ? "이 기기로 이 모임의 새 카드 알림을 받을 수 있어요." : st.enabled ? "이 모임의 알림을 켜려면 버튼을 눌러주세요." : "알림 서버 설정이 아직 완료되지 않았어요.");
     } catch { say("브라우저의 알림 설정을 확인해 주세요."); }
   };
   btn.onclick = async() => {
@@ -2143,17 +2146,16 @@ async function bindHostPush(p) {
       if (permission !== "granted") throw new Error("알림 권한이 허용되지 않았어요. 브라우저 설정에서 허용해 주세요.");
       const reg = await navigator.serviceWorker.register("/sw.js", {scope:"/"});
       const existing = await reg.pushManager.getSubscription();
-      if (existing) {
-        // 서버에서 먼저 구독 해제한 뒤 기기 구독을 취소한다.
+      if (existing && btn.dataset.subscribed === "1") {
+        // 다른 파티에서도 같은 기기 구독을 쓰므로 서버의 해당 파티 등록만 해제한다.
         await api("/api/push?party=" + p.id, {method:"DELETE", headers:{"x-host-code":hostCode(p.id)}, body:{subscription:existing.toJSON()}});
-        await existing.unsubscribe();
-        say("이 기기의 새 카드 알림을 껐어요.");
+        say("이 모임의 새 카드 알림을 껐어요.");
       } else {
         const cfg = await api("/api/push?party=" + p.id, {headers:{"x-host-code":hostCode(p.id)}});
         if (!cfg.enabled || !cfg.publicKey) throw new Error("아직 서버 알림 설정이 완료되지 않았어요.");
-        const sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:vapidBytes(cfg.publicKey)});
+        const sub = existing || await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:vapidBytes(cfg.publicKey)});
         try { await api("/api/push?party=" + p.id, {method:"POST",headers:{"x-host-code":hostCode(p.id)},body:{subscription:sub.toJSON()}}); }
-        catch(e) { await sub.unsubscribe().catch(()=>{}); throw e; }
+        catch(e) { if (!existing) await sub.unsubscribe().catch(()=>{}); throw e; }
         say("이 기기로 새 카드 도착 알림을 보낼게요.");
       }
     } catch(e) { say(e.message || "알림을 설정하지 못했어요."); }
