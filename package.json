@@ -1,0 +1,9 @@
+{
+  "name": "mokku-party",
+  "private": true,
+  "version": "0.1.0",
+  "description": "MOKKU home party web app",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}
