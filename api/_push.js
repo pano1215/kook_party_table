@@ -35,7 +35,7 @@ async function saveSubscriptions(p, list) {
 function cardNotificationBody(card) {
   // 익명 게스트의 별명은 알림/잠금 화면에 노출하지 않는다.
   const nickname = typeof card?.nickname === "string"
-    ? card.nickname.replace(/[\\u0000-\\u001f\\u007f-\\u009f]/g, "").trim().slice(0, 20)
+    ? card.nickname.replace(/[\u0000-\u001f\u007f-\u009f]/g, "").trim().slice(0, 20)
     : "";
   const subject = card?.anonymous || !nickname ? "손님" : nickname;
   return `${subject}의 취향이 도착했어요. 이제 메뉴 추천으로 테이블을 꾸며주세요.`;
