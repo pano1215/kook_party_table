@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#b77f72">
 <title>모꾸 — 좋아하는 사람들과 집에서 좀 더 특별하게</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;500;600&family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
@@ -2098,6 +2100,7 @@ function guestsTab(p, agg) {
     <p class="host-invite-code">초대 코드 <span class="code">${esc(p.invite_code)}</span></p>
     <p class="muted">${REMOTE ? "링크를 받은 손님은 어떤 휴대폰에서든 카드를 쓸 수 있어요. 들어온 카드는 이 화면에 저절로 나타나요." : "이 HTML 앱은 파티를 이 브라우저에만 저장해요. 같은 브라우저의 새 탭에서 게스트 화면을 열어 휴대폰 여러 대처럼 시연할 수 있어요."}</p>
     <div class="row host-invite-actions"><button type="button" id="copyLink">초대 링크 보내기</button><a class="btn" href="${esc(inviteUrl(p))}" target="_blank" rel="noopener">새 탭에서 게스트 화면 열기</a></div>
+    ${REMOTE ? `<div class="host-notify"><button type="button" class="small" id="pushToggle">🔔 새 카드 알림 받기</button><p class="muted" id="pushStatus" role="status">호스트의 기기에 알림을 보내려면 허용해 주세요.</p></div>` : ""}
     <p class="muted host-invite-progress">받은 취향 카드 <b>${agg.guestCount}/${want}</b>장</p></div><div class="host-invite-doodle" aria-hidden="true"><img src="assets/toast-sticker.webp" alt=""><span>✳</span></div></div>
   <div class="host-preferences"><h2>모아진 취향</h2>
   <div class="host-preference-grid">
@@ -2113,6 +2116,50 @@ function guestsTab(p, agg) {
   <details class="card host-details"><summary>링크를 쓰지 않는 게스트 대신 입력하기</summary>
     <form id="hostCard" novalidate>${cardForm("h_", null, true)}<div id="hcErr"></div><button type="submit" style="margin-top:12px">추가</button></form></details>
   ${p.guests.length ? `<details class="card host-details"><summary>카드를 낸 게스트 ${p.guests.length}명</summary><ul class="list">${p.guests.map((g) => `<li class="row" style="align-items:center"><span>${esc(g.anonymous ? K.ANON : g.nickname)}${g.by_host ? " <span class='muted'>(호스트 입력)</span>" : ""}</span>${g.by_host ? `<button class="small" style="flex:0 0 auto" data-del="${esc(g.id)}" type="button">삭제</button>` : ""}</li>`).join("")}</ul></details>` : ""}`;
+}
+// 브라우저 시스템 푸시. 호스트의 기기에서 직접 선택한 경우에만 구독한다.
+function webPushSupported() { return REMOTE && location.protocol === "https:" && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window; }
+function vapidBytes(key) { const p = (key + "=".repeat((4 - key.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/"); const b = atob(p); return Uint8Array.from(b, (c) => c.charCodeAt(0)); }
+async function bindHostPush(p) {
+  const btn = $("#pushToggle"), info = $("#pushStatus");
+  if (!btn || !info) return;
+  const say = (t) => { if (info.isConnected) info.textContent = t; };
+  if (!webPushSupported()) { btn.disabled = true; say("이 브라우저는 웹 푸시를 지원하지 않아요. iPhone은 홈 화면에 추가한 앱에서 설정해 주세요."); return; }
+  if (Notification.permission === "denied") { btn.disabled = true; say("기기에서 알림이 차단되어 있어요. 브라우저 설정에서 모꾸 알림을 허용해 주세요."); return; }
+  const update = async() => {
+    try {
+      const reg = await navigator.serviceWorker.register("/sw.js", {scope:"/"});
+      const sub = await reg.pushManager.getSubscription();
+      if (btn.isConnected) btn.textContent = sub ? "🔕 이 기기 알림 끄기" : "🔔 새 카드 알림 받기";
+      if (sub) say("이 기기의 알림 수신이 설정되어 있어요.");
+    } catch { say("브라우저의 알림 설정을 확인해 주세요."); }
+  };
+  btn.onclick = async() => {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    try {
+      // 사용자의 클릭 핸들러 안에서 즉시 권한을 요청해야 브라우저가 허용한다.
+      const permission = Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
+      if (permission !== "granted") throw new Error("알림 권한이 허용되지 않았어요. 브라우저 설정에서 허용해 주세요.");
+      const reg = await navigator.serviceWorker.register("/sw.js", {scope:"/"});
+      const existing = await reg.pushManager.getSubscription();
+      if (existing) {
+        // 서버에서 먼저 구독 해제한 뒤 기기 구독을 취소한다.
+        await api("/api/push?party=" + p.id, {method:"DELETE", headers:{"x-host-code":hostCode(p.id)}, body:{subscription:existing.toJSON()}});
+        await existing.unsubscribe();
+        say("이 기기의 새 카드 알림을 껐어요.");
+      } else {
+        const cfg = await api("/api/push?party=" + p.id, {headers:{"x-host-code":hostCode(p.id)}});
+        if (!cfg.enabled || !cfg.publicKey) throw new Error("아직 서버 알림 설정이 완료되지 않았어요.");
+        const sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:vapidBytes(cfg.publicKey)});
+        try { await api("/api/push?party=" + p.id, {method:"POST",headers:{"x-host-code":hostCode(p.id)},body:{subscription:sub.toJSON()}}); }
+        catch(e) { await sub.unsubscribe().catch(()=>{}); throw e; }
+        say("이 기기로 새 카드 도착 알림을 보낼게요.");
+      }
+    } catch(e) { say(e.message || "알림을 설정하지 못했어요."); }
+    finally { if(btn.isConnected) { btn.disabled = false; update(); } }
+  };
+  update();
 }
 // ------------------------------------------------------------ 초대 링크 보내기 창
 async function copyText(text) { try { await navigator.clipboard.writeText(text); return true; } catch { return false; } }
@@ -2181,6 +2228,7 @@ function openShare(p, copied, hostCodeOnce) {
   el.querySelector(copied ? "#shKakao" : "#shCopy").focus();
 }
 function bindGuestsTab(p) {
+  bindHostPush(p);
   $("#copyLink").onclick = async () => { const ok = await copyText(inviteUrl(p)); countShare(p, "copy"); openShare(p, ok); };
   bindInterview();
   $("#hostCard").onsubmit = async (e) => {
