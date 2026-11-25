@@ -25,6 +25,7 @@ module.exports = async (req, res) => {
       if (fresh.version !== p.version) continue;
       p.version += 1; await L.saveParty(p);
       if (i < 0) await L.logEvent(req, "card_sent", { ch: p.src, role: "guest", party: p.id });   // 핵심 행동 ③ 새 카드만, 호스트의 채널로 묶는다
+      if (i < 0) { try { await require("./_push").notifyNewCard(p); } catch (e) { console.warn("[mokku push] delivery failed"); } } // 알림 실패가 카드 저장을 막지 않음
       return L.send(res, 200, { id: cid, token, edited: i >= 0 });
     }
     L.send(res, 409, { error: "잠시 뒤 다시 보내 주세요." });
