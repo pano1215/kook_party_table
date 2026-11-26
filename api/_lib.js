@@ -200,4 +200,4 @@ async function logEvent(req, ev, { ch, role, party, kind } = {}) {
     await cmd("LTRIM", "events", "0", "49999");
   } catch {}   // 기록이 실패해도 본래 요청은 성공시킨다
 }
-module.exports = { cmd, sha256, rand, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: SUPA || !!URL_, storageKind: SUPA ? "supabase" : URL_ ? "upstash" : "memory", storageCheck, safeEq, cleanParty, blocked, bump, arr, normChannel, visitor, logEvent };
+module.exports = { cmd, sha256, rand, expireAt, getParty, saveParty, forHost, forGuest, hostOk, cleanCard, send, body, limit, str, MAX_CARDS, storageOn: SUPA || !!URL_, storageKind: SUPA ? "supabase" : URL_ ? "upstash" : "memory", storageCheck, safeEq, cleanParty, blocked, bump, arr, normChannel, visitor, logEvent };

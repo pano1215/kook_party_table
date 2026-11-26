@@ -1,0 +1,18 @@
+{
+  "name": "모꾸 · 모임 꾸미기",
+  "short_name": "모꾸",
+  "description": "모두의 음식 취향을 모아 홈파티를 준비해요.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fffaf4",
+  "theme_color": "#b77f72",
+  "icons": [
+    {
+      "src": "/assets/toast-sticker.webp",
+      "sizes": "any",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
+}
