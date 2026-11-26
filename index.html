@@ -840,6 +840,80 @@ body .code, body .code *, body input[autocomplete="one-time-code"] {
 .zero-card-pop::backdrop{background:rgba(34,56,74,.42)}
 .zero-card-pop h2{font-size:21px;margin:12px 0}.zero-card-pop .muted{margin:10px 0;text-wrap:balance}
 .share-pop .box{max-height:calc(100dvh - 40px);overflow-y:auto}
+
+/* Instagram paid campaign landing — v2.6 */
+.alcohol-free-landing .hello-top::before{background:radial-gradient(ellipse at 22% 48%,#ead7c1 0,rgba(234,215,193,.45) 35%,transparent 75%)}
+.alcohol-free-landing .hero-copy .dinner-cta{margin-top:24px;min-height:52px;padding:13px 24px}
+.alcohol-free-landing .dinner-hint{font-size:13px;color:#736F65;margin-top:10px;line-height:1.6}
+.alcohol-free-landing .hero-toast-sticker{display:none}
+.alcohol-free-landing .hero-collage .photo-main{background:#e5d9ca}
+.alcohol-free-landing .hero-collage .photo-main img{object-fit:contain;object-position:center;filter:none}
+@media(max-width:759px){.alcohol-free-landing .hero-copy .dinner-cta{display:flex;width:100%;justify-content:center;margin-top:18px}.alcohol-free-landing .dinner-hint{display:block;text-align:center;margin-bottom:12px}.alcohol-free-landing .hero-collage .photo-main{height:clamp(320px,105vw,480px)}}
+.alcohol-free-landing .dinner-story{margin-top:18px;padding:16px 18px;border:1px solid #d8cfbf;border-radius:18px;background:rgba(255,250,242,.78);box-shadow:0 10px 24px rgba(103,80,56,.08);max-width:42ch}.alcohol-free-landing .dinner-story b{display:block;font-size:15px;color:#4d5f53;margin-bottom:8px}.alcohol-free-landing .dinner-story span{display:block;font-size:13px;line-height:1.88;color:#6e675d}
+.alcohol-free-landing .dinner-story{margin-top:0;padding:0 0 0 18px;border:0;border-left:1px solid #C0B7A6;border-radius:0;background:transparent;box-shadow:none;max-width:44ch}
+.alcohol-free-landing .dinner-story p{margin:0 0 13px;color:#736F65;font-size:clamp(14px,1.11vw,16px);line-height:1.9;letter-spacing:-.025em;word-break:keep-all;overflow-wrap:break-word}
+.alcohol-free-landing .dinner-story .dinner-quote{color:#485B4D;font-weight:600}
+.alcohol-free-landing .dinner-story .dinner-ending{color:#485B4D;margin-bottom:0}
+@media(max-width:759px){.alcohol-free-landing .dinner-story{padding-left:12px}.alcohol-free-landing .dinner-story p{font-size:13px;line-height:1.85;margin-bottom:10px}}
+
+/* Instagram landing: content-width responsive layout, native photo ratio. */
+.alcohol-free-landing{container-type:inline-size;min-width:0;max-width:100%;}
+.alcohol-free-landing .hello-top{grid-template-columns:minmax(0,1fr) minmax(0,1.06fr);gap:clamp(24px,4cqw,54px);align-items:center;min-height:0;padding:clamp(24px,4cqw,54px) 0 52px;isolation:isolate;}
+.alcohol-free-landing .hello-top::before{inset:0 auto 0 0;width:100%;background:radial-gradient(ellipse at 15% 48%,#ead7c15e 0,rgba(234,215,193,.20) 40%,transparent 76%);}
+.alcohol-free-landing .hero-copy{min-width:0;width:100%;padding:12px 0;align-items:flex-start;}
+.alcohol-free-landing h1{font-size:clamp(34px,6.1cqw,68px);letter-spacing:-.075em;line-height:1.22;margin-bottom:22px;max-width:100%;word-break:keep-all;overflow-wrap:anywhere;}
+.alcohol-free-landing .hero-ornament{margin-bottom:22px;}
+.alcohol-free-landing .dinner-story{width:100%;max-width:46ch;min-width:0;box-sizing:border-box;padding:0 0 0 16px;margin:0;}
+.alcohol-free-landing .dinner-story p{font-size:clamp(14px,1.55cqw,16px);line-height:1.85;overflow-wrap:anywhere;}
+.alcohol-free-landing .hero-copy .dinner-cta{max-width:100%;white-space:normal;text-align:center;justify-content:center;}
+.alcohol-free-landing .hero-collage{min-width:0;min-height:0;height:auto;padding:10px 14px 24px 14px;margin:0;align-self:center;width:100%;}
+.alcohol-free-landing .hero-collage .photo-main{width:100%;max-width:560px;height:auto;max-height:none;flex:none;box-sizing:border-box;background:#FFFEF9;border:8px solid #FFFEF9;border-bottom-width:16px;transform:rotate(1deg);}
+.alcohol-free-landing .hero-collage .photo-main img{width:100%;height:auto;aspect-ratio:1122/1402;object-fit:contain;display:block;filter:none;}
+.alcohol-free-landing .hero-collage .photo-small{width:clamp(105px,24%,155px);height:auto;left:4px;bottom:4px;border-width:5px;border-bottom-width:10px;transform:rotate(-7deg);}
+.alcohol-free-landing .hero-collage .photo-small img{width:100%;height:auto;aspect-ratio:724/362;object-fit:contain;}
+.alcohol-free-landing .collage-tape{top:0;right:16%;}
+.alcohol-free-landing .collage-spark{top:0;left:0;font-size:clamp(25px,4cqw,45px);}
+.alcohol-free-landing .collage-doodle{right:4%;bottom:-17px;}
+@container (max-width:680px){
+ .alcohol-free-landing .hello-top{display:flex;flex-direction:column;align-items:stretch;gap:20px;padding:18px 0 36px;}
+ .alcohol-free-landing .hero-copy{display:flex;padding:0;}
+ .alcohol-free-landing h1{font-size:clamp(34px,9cqw,53px);margin-bottom:18px;}
+ .alcohol-free-landing .dinner-story{max-width:none;padding-left:12px;}
+ .alcohol-free-landing .hero-copy .dinner-cta{width:100%;margin-top:18px;}
+ .alcohol-free-landing .hero-collage{padding:8px 9px 22px;width:min(100%,460px);}
+ .alcohol-free-landing .hero-collage .photo-main{height:auto;max-width:100%;border-width:6px;border-bottom-width:12px;}
+ .alcohol-free-landing .hero-collage .photo-small{left:1px;bottom:2px;}
+ .alcohol-free-landing .collage-doodle{display:none;}
+}
+
+/* v2.5 — editorial breathing room and larger original-ratio table photographs */
+.alcohol-free-landing .hello-top{padding:clamp(32px,4.2cqw,64px) clamp(12px,2.8cqw,38px) 52px;gap:clamp(32px,5cqw,68px);grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);align-items:center;}
+.alcohol-free-landing .hello-top::before{inset:-12px -12px 0 -12px;width:auto;background:radial-gradient(ellipse at 28% 42%,rgba(225,205,178,.30) 0%,rgba(239,224,205,.18) 36%,transparent 70%);}
+.alcohol-free-landing .hero-copy{padding:clamp(12px,2cqw,28px) 0;}
+.alcohol-free-landing h1{font-size:clamp(32px,5.7cqw,66px);letter-spacing:-.065em;line-height:1.32;margin:0 0 32px;}
+.alcohol-free-landing .hero-ornament{margin-bottom:26px;}
+.alcohol-free-landing .dinner-story{padding:5px 0 5px clamp(16px,2cqw,24px);max-width:46ch;border-left:1px solid #c9bba7;}
+.alcohol-free-landing .dinner-story p{line-height:1.75;margin-bottom:8px;word-break:keep-all;overflow-wrap:break-word;}
+.alcohol-free-landing .hero-copy .dinner-cta{margin-top:32px;padding:15px 26px;min-height:54px;}
+.alcohol-free-landing .hero-collage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:12px 12px 20px;}
+.alcohol-free-landing .hero-collage .photo-main{width:100%;max-width:560px;}
+.alcohol-free-landing .dinner-photo-pair{position:relative;z-index:3;display:flex;align-items:flex-start;justify-content:center;gap:clamp(14px,2cqw,26px);width:100%;max-width:540px;margin-top:clamp(-38px,-3cqw,-18px);padding:0 7px 8px;}
+.alcohol-free-landing .dinner-polaroid{flex:1 1 0;min-width:0;max-width:245px;margin:0;padding:7px 7px 13px;background:#fffdf7;border-radius:2px;box-shadow:0 12px 25px #4e46352b;}
+.alcohol-free-landing .dinner-polaroid img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;}
+.alcohol-free-landing .dinner-evening{transform:rotate(-6deg) translateY(0);}
+.alcohol-free-landing .dinner-garden{transform:rotate(5deg) translateY(13px);}
+.alcohol-free-landing .collage-doodle{bottom:0;right:1%;}
+@container (max-width:760px){
+ .alcohol-free-landing .hello-top{display:flex;flex-direction:column;align-items:stretch;gap:32px;padding:26px clamp(10px,4cqw,28px) 44px;}
+ .alcohol-free-landing .hero-copy{padding:10px 0 0;}
+ .alcohol-free-landing h1{font-size:clamp(32px,8.4cqw,54px);margin-bottom:24px;}
+ .alcohol-free-landing .dinner-story{max-width:100%;padding-left:16px;}
+ .alcohol-free-landing .dinner-story p{font-size:clamp(14px,3.7cqw,16px);line-height:1.7;margin-bottom:7px;}
+ .alcohol-free-landing .hero-copy .dinner-cta{margin-top:24px;width:auto;max-width:100%;align-self:flex-start;}
+ .alcohol-free-landing .hero-collage{width:min(100%,500px);padding:12px 10px 18px;}
+ .alcohol-free-landing .dinner-photo-pair{gap:16px;margin-top:-20px;}
+ .alcohol-free-landing .dinner-polaroid{padding:5px 5px 10px;}
+}
 </style>
 </head>
 <body>
@@ -1606,20 +1680,26 @@ const MOOD_ICON = {
 const moodIcon = (m) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MOOD_ICON[m] || MOOD_ICON["편안한 저녁"]}</svg>`;
 const MOOD_EN = { "집들이": "housewarming", "생일/기념일": "birthday party", "Bar": "home bar", "편안한 저녁": "cozy dinner", "브런치": "brunch club", "명절/연말": "holiday party" };
 // ------------------------------------------------------------ 첫 화면
+function isInstagramAlcoholFreeLanding() {
+  try {
+    const q = new URLSearchParams(location.search || "");
+    return q.get("utm_source") === "instagram" && q.get("utm_medium") === "paid_social" && q.get("utm_campaign") === "alcohol_free_dinner" && q.get("utm_content") === "warm_homeparty" && q.get("landing") === "alcohol_free" && !/^(facebook|fb_|messenger|audience_network|an_|threads)/i.test(q.get("utm_term") || q.get("placement") || "");
+  } catch { return false; }
+}
 function homeView() {
+  const dinner = isInstagramAlcoholFreeLanding();
   return `${takeFlash()}
-  <section class="hello">
+  <section class="hello${dinner ? " alcohol-free-landing" : ""}">
     <div class="hello-top">
       <div class="hero-copy">
         <div class="hero-ornament" aria-hidden="true"><span class="line-mark"></span><span class="flower-mark">✳</span></div>
-        <h1>집에서
-좀 더 특별하게</h1>
-        <p>"모임꾸미기-모꾸"와 함께 좋아하는 사람들을 위한 소중한 파티를 준비해요. 친구가 못 먹는 음식이 있어 곤란했던 고민, 모꾸가 부담 없이 챙길게요.</p>
+        <h1>${dinner ? "술 없이\n즐거운 저녁" : "집에서\n좀 더 특별하게"}</h1>
+        ${dinner ? `<div class="dinner-story"><p class="dinner-quote">“뭐 먹고 싶어?”라는 물음에 돌아오는 “난 다 좋아!”</p><p>메뉴를 고민하는 호스트도, 못 먹는 음식이나 알러지를 이야기하기 조심스러운 게스트도 마음이 편할 수 있도록.</p><p>모임꾸미기, 모꾸가 모두의 취향을 모아 함께 즐길 수 있는 메뉴를 추천해 드려요.</p><p>좋아하는 사람들과 맛있는 음식, 따뜻한 이야기로 채우는 시간.</p><p class="dinner-ending">모꾸와 함께 술 없이도 특별한 저녁을 만들어 봐요.</p></div><a class="btn primary dinner-cta" href="#/new/${DEFAULT_MOOD}">논알콜 홈파티 준비하기 ${HEART("var(--coral)",16)}</a>` : `<p>"모임꾸미기-모꾸"와 함께 좋아하는 사람들을 위한 소중한 파티를 준비해요. 친구가 못 먹는 음식이 있어 곤란했던 고민, 모꾸가 부담 없이 챙길게요.</p>`}
         <img class="hero-toast-sticker" src="assets/toast-sticker.webp" alt="" aria-hidden="true">
       </div>
       <div class="hero-collage" aria-hidden="true">
-        <div class="photo-main"><img src="assets/garden-table.webp" alt=""></div>
-        <div class="photo-small"><img src="assets/candle-dinner.webp" alt=""></div>
+        <div class="photo-main"><img src="${dinner ? "assets/landing-alcohol-free.png" : "assets/garden-table.webp"}" alt=""></div>
+        ${dinner ? `<div class="dinner-photo-pair"><figure class="dinner-polaroid dinner-evening"><img src="assets/landing-evening.webp" alt="촛불과 꽃으로 꾸민 아늑한 저녁 식탁"></figure><figure class="dinner-polaroid dinner-garden"><img src="assets/landing-garden.webp" alt="정원이 보이는 밝고 편안한 식탁"></figure></div>` : `<div class="photo-small"><img src="assets/candle-dinner.webp" alt=""></div>`}
         <span class="collage-tape"></span>
         <span class="collage-spark">✷</span>
         <span class="collage-doodle">﹏﹏</span>
@@ -2092,7 +2172,7 @@ function hostView(id) {
     <section class="host-stage host-stage-${ui.tab}">${body(p, agg)}</section>
   </main>`;
 }
-function inviteUrl(p) { return `${location.href.split("#")[0]}#/p/${p.invite_code}`; }
+function inviteUrl(p) { const url = new URL(location.href); if (url.searchParams.get("landing") === "alcohol_free") { for (const k of [...url.searchParams.keys()]) if (k === "landing" || k.startsWith("utm_") || k === "src" || k === "placement" || k === "fbclid") url.searchParams.delete(k); } url.hash = "/p/" + p.invite_code; return url.href; }
 function guestsTab(p, agg) {
   const want = p.people - 1;
   const allergy = Object.entries(agg.allergies), dis = Object.entries(agg.dislikes), likes = Object.entries(agg.likes);
