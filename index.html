@@ -1455,6 +1455,31 @@ function normChannel(raw) {
   const hit = CHANNELS.find(([, , re]) => re.test(v));
   return hit ? hit[0] : "other";
 }
+// Instagram 진입 판별: 광고뿐 아니라 프로필/일반 링크/인앱 브라우저도 지원.
+function instagramEntry(q = new URLSearchParams(location.search), referrer = document.referrer, ua = navigator.userAgent) {
+  const source = (q.get("src") || q.get("utm_source") || "").trim().toLowerCase();
+  const placement = (q.get("utm_term") || q.get("placement") || "").trim().toLowerCase();
+  const excluded = /^(?:facebook|fb(?:[_-]|$)|messenger|audience[_-]?network|an(?:[_-]|$)|threads|msg(?:[_-]|$))/i;
+  if (excluded.test(placement) || excluded.test(source)) return "";
+  if (source && ["friend","kakao","threads","naver_cafe","naver_blog","direct","invite"].includes(normChannel(source))) return "";
+  const ig = value => {
+    if (/^(?:instagram|ig)[_-]?(?:reels?)$|^reels?$/i.test(value)) return "instagram_reels";
+    if (/^(?:instagram|ig)[_-]?(?:feed|posts?)$/i.test(value)) return "instagram_feed";
+    if (/^(?:instagram|ig)[_-]?(?:story|stories)$|^stories$/i.test(value)) return "instagram_stories";
+    if (/^(?:instagram|insta|ig|인스타그램|인스타)(?:$|[_-])/i.test(value)) return "instagram";
+    return "";
+  };
+  const p = ig(placement), src = ig(source);
+  if (p && p !== "instagram") return p;
+  if (src) return src;
+  if (p) return p;
+  try {
+    const u = new URL(referrer);
+    if (/^(?:https?:)$/.test(u.protocol) && /(?:^|\.)instagram\.com$/i.test(u.hostname)) return "instagram";
+    if (u.protocol === "android-app:" && u.hostname === "com.instagram.android") return "instagram";
+  } catch {}
+  return /(?:^|[\s;(])Instagram(?:[\s/;)]|$)/i.test(ua || "") ? "instagram" : "";
+}
 const SRC_KEY = "kook.src";
 (function captureSource() {
   try {
@@ -1469,7 +1494,9 @@ const SRC_KEY = "kook.src";
       // Meta Threads placement URL 동적 매개변수는 일반적으로 threads_stream이다.
       "threads_stream": "threads", "threads_feed": "threads", "threads": "threads" };
     const fromPlacement = mapped[placement];
-    const chosen = src && normChannel(src) !== "instagram" ? normChannel(src) : (fromPlacement || (src ? normChannel(src) : ""));
+    const igChannel = instagramEntry(q);
+    const nonIgPlacement = /^(?:facebook|fb(?:[_-]|$)|messenger|audience[_-]?network|an(?:[_-]|$)|threads|msg(?:[_-]|$))/i.test(placement);
+    const chosen = igChannel || (nonIgPlacement && src && /^instagram(?:_|$)/.test(normChannel(src)) ? (fromPlacement || "other") : (src && normChannel(src) !== "instagram" ? normChannel(src) : (fromPlacement || (src ? normChannel(src) : ""))));
     if (chosen) sessionStorage.setItem(SRC_KEY, chosen);
   } catch {}
 })();
@@ -1681,10 +1708,7 @@ const moodIcon = (m) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="n
 const MOOD_EN = { "집들이": "housewarming", "생일/기념일": "birthday party", "Bar": "home bar", "편안한 저녁": "cozy dinner", "브런치": "brunch club", "명절/연말": "holiday party" };
 // ------------------------------------------------------------ 첫 화면
 function isInstagramAlcoholFreeLanding() {
-  try {
-    const q = new URLSearchParams(location.search || "");
-    return q.get("utm_source") === "instagram" && q.get("utm_medium") === "paid_social" && q.get("utm_campaign") === "alcohol_free_dinner" && q.get("utm_content") === "warm_homeparty" && q.get("landing") === "alcohol_free" && !/^(facebook|fb_|messenger|audience_network|an_|threads)/i.test(q.get("utm_term") || q.get("placement") || "");
-  } catch { return false; }
+  try { return !!instagramEntry(); } catch { return false; }
 }
 function homeView() {
   const dinner = isInstagramAlcoholFreeLanding();
@@ -2172,7 +2196,7 @@ function hostView(id) {
     <section class="host-stage host-stage-${ui.tab}">${body(p, agg)}</section>
   </main>`;
 }
-function inviteUrl(p) { const url = new URL(location.href); if (url.searchParams.get("landing") === "alcohol_free") { for (const k of [...url.searchParams.keys()]) if (k === "landing" || k.startsWith("utm_") || k === "src" || k === "placement" || k === "fbclid") url.searchParams.delete(k); } url.hash = "/p/" + p.invite_code; return url.href; }
+function inviteUrl(p) { const url = new URL(location.href); if (url.searchParams.get("landing") === "alcohol_free" || isInstagramAlcoholFreeLanding()) { for (const k of [...url.searchParams.keys()]) if (k === "landing" || k.startsWith("utm_") || k === "src" || k === "placement" || k === "fbclid") url.searchParams.delete(k); } url.hash = "/p/" + p.invite_code; return url.href; }
 function guestsTab(p, agg) {
   const want = p.people - 1;
   const allergy = Object.entries(agg.allergies), dis = Object.entries(agg.dislikes), likes = Object.entries(agg.likes);
