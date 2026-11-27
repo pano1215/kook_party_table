@@ -5,8 +5,24 @@
 
 KAIST APP 창업 프로그램 프로젝트. 예전 이름은 '쿸(kook)'이며 2026-11-22에 '모꾸'로 바꿨다.
 
-## 인스타그램 광고 전용 논알콜 랜딩 v2.6 (2026-11-26~27)
+## 인스타그램 전체 유입 논알콜 랜딩 (2026-11-27, 최신 운영 기준)
 
+- **변경 배경:** v2.6에서는 특정 광고의 UTM 다섯 항목이 모두 일치해야 전용 랜딩이 표시되었다. 인스타그램에서 접속해도 일반 화면이 표시되는 사례가 있어, 광고 소재에 한정하지 않고 식별 가능한 Instagram 유입 전체로 확대했다.
+- **표시 화면:** 프로필·릴스·피드·스토리·유료 광고 및 인스타그램 인앱 브라우저에서 유입되면 기존 v2.6의 ‘술 없이 즐거운 저녁’ 화면과 ‘논알콜 홈파티 준비하기’ CTA를 표시한다. 일반 직접 방문, 카카오·지인·네이버 등 명시적인 비Instagram 채널, Facebook·Messenger·Audience Network·Threads 유입은 일반 화면을 유지한다. 게스트 초대 및 운영자 페이지는 기존 라우팅을 유지한다.
+- **판별 방식:** `index.html`의 `instagramEntry()`에서 `src`, `utm_source`, `utm_term` 또는 `placement`, Instagram 도메인의 referrer 및 인앱 브라우저 User-Agent를 확인한다. 명시적인 비Instagram 채널·게재 위치는 제외한다. 특정 캠페인명·소재명·`landing` 파라미터는 필수 조건이 아니다.
+- **권장 프로필 링크:** https://mokku-party.vercel.app/?src=instagram
+- **릴스:** https://mokku-party.vercel.app/?src=instagram_reels
+- **피드:** https://mokku-party.vercel.app/?src=instagram_feed
+- **스토리:** https://mokku-party.vercel.app/?src=instagram_stories
+- **일반 홈:** https://mokku-party.vercel.app/
+- 기존 Meta 광고 URL 및 UTM 설정은 유지 가능하다. Instagram 유입 판별 결과를 기존 채널 집계에도 활용하며, 식별 가능한 게재 위치를 우선해 릴스·피드·스토리로 분류한다. 분류 불가 시 Instagram 미구분으로 기록한다. 초대 링크에서는 광고·유입 태그를 제거한다. 기존 서버 API·저장소·환경변수와 이미지·카피·추천 기능은 변경하지 않았다.
+- **검증 및 배포:** 유입 판별 모의 테스트 14건 통과. [main 반영 커밋](https://github.com/pano1215/kook_party_table/commit/b7f8de2ffd2f26851b31d66297cc27128775ffe0), [Vercel 배포](https://vercel.com/jeungeunhancindy-2294/zippy-crimson-ibkdjh4/4i5wWGm5nDA9VeVuKX1rH2CWgerR) 상태 success 확인. 사용자도 운영 배포를 확인했다고 전달함. 실제 모든 게재 위치의 클릭 및 퍼널 집계는 별도 검증 필요.
+- **한계:** 외부 브라우저로 전환하면서 URL 태그·referrer·인앱 브라우저 정보가 모두 사라지면 Instagram 유입임을 식별할 수 없다. 태그가 붙은 링크를 다른 곳에 공유해도 전용 화면이 표시될 수 있으며, 유입 판별은 인증 수단이 아니다.
+- 관련 초기 작업: [이슈 #28](https://github.com/pano1215/kook_party_table/issues/28).
+
+## 인스타그램 광고 전용 논알콜 랜딩 v2.6 (2026-11-26~27, 초기 구현 이력)
+
+- 아래는 초기 광고 전용 구현 이력이다. 현재 화면 분기는 위의 2026-11-27 최신 운영 기준을 따른다.
 - 목적: ‘술 없이 즐거운 저녁’ 광고와 첫 화면의 메시지·이미지를 연결해 파티 생성으로 유도한다.
 - **광고 전용 링크:** https://mokku-party.vercel.app/?utm_source=instagram&utm_medium=paid_social&utm_campaign=alcohol_free_dinner&utm_content=warm_homeparty&landing=alcohol_free
 - 해당 광고의 Instagram 게재 위치에만 이 URL을 설정한다. 기존 게재 위치 분류는 `&utm_term={{placement}}`를 추가하거나 기존 `src=instagram_reels|instagram_feed|instagram_stories`를 추가해 유지할 수 있다. 기존 src 전용 링크는 일반 화면을 표시한다.
@@ -36,7 +52,7 @@ KAIST APP 창업 프로그램 프로젝트. 예전 이름은 '쿸(kook)'이며 2
 - **스토리:** https://mokku-party.vercel.app/?src=instagram_stories
 - 기존 `?src=instagram` 유입은 **인스타그램 · 미구분**으로 집계하여 이전 기록과 링크 호환성 유지.
 - 운영 페이지 `https://mokku-party.vercel.app/#/ops`의 채널 목록 및 행동 퍼널에 위 세 유형을 별도 표기한다. 서버의 채널 정규화(`api/_lib.js`)와 브라우저(`index.html`)를 함께 변경하여 신규 파티 생성·초대·카드·메뉴 추천까지 같은 채널로 귀속한다.
-- 유료 Meta 광고는 `utm_term={{placement}}` 같은 **게재 위치 URL 매개변수**가 있으면 브라우저에서 Reels/Feed/Stories 분류로 해석할 수 있도록 구현하였다. 이때 특정 채널로 명시된 `src` 값은 우선한다. `utm_source`만 쓰는 이전 링크는 미구분으로 취급.
+- 유료 Meta 광고는 `utm_term={{placement}}` 같은 **게재 위치 URL 매개변수**가 있으면 브라우저에서 Reels/Feed/Stories 분류로 해석할 수 있도록 구현하였다. 초기 구현에서는 특정 채널로 명시된 `src` 값이 우선했다. 11/27부터 Instagram 유입에서는 식별 가능한 게재 위치를 우선하며, 위치를 알 수 없는 일반 Instagram 링크는 미구분으로 취급한다.
 - **주의:** Instagram 일반 릴스·피드 게시물 캡션에 적은 URL이 언제나 클릭 가능한 것은 아니다. 광고 목적지 링크·프로필 링크·스토리 링크 스티커처럼 실제로 클릭 가능한 경로에서 유입을 측정한다. 프로필에 동일한 하나의 링크만 놓으면 사람들이 릴스와 게시물 중 어디서 왔는지 자동 구분할 수 없다.
 - 과거 기록은 소급 재분류할 수 없으며, 코드 병합만으로 실제 Vercel Production 재배포 완료나 실사용 이벤트 검증을 의미하지 않는다. 배포 후 세 링크의 방문, 파티 생성, 메뉴 추천, CSV 내보내기를 점검한다.
 
@@ -243,6 +259,11 @@ KAIST APP 창업 프로그램 프로젝트. 예전 이름은 '쿸(kook)'이며 2
 - 앞서 해커톤에 함께 참여한 팀원들에게 남은 사용자 검증·서비스 개선·최종 산출물 작업 참여를 제안하는 연락 문구 작성. 합류나 수료 조건 확정은 아님.
 - 실사용자 검증을 위해 **이슈 기반 피드백 수집 → 수정 → 재배포 → 재검증** 흐름 정리. 실제 수정/배포/성과는 후속 증빙 필요.
 - 관련 이슈: [#24 사용자 검증](https://github.com/pano1215/kook_party_table/issues/24), [#25 최종 제출](https://github.com/pano1215/kook_party_table/issues/25).
+
+### 2026-11-27 — 인스타그램 전체 유입 랜딩 확대 및 운영 배포 확인
+- 특정 광고 UTM 일치 조건을 Instagram 전체 유입 판별로 확대. 기존 v2.6 논알콜 디자인과 일반 홈을 유지하고, 기존 채널 추적에 인앱 브라우저·referrer 기반 판별을 추가.
+- 모의 테스트 14건 통과, main 반영 및 Vercel success 확인. 사용자가 운영 배포 확인을 전달함. 실제 모든 유입 위치 및 운영 통계 검증은 후속 확인.
+- 최신 분기 정책·프로필 및 게재 위치별 링크·검증 한계를 README 상단에 정리.
 
 ### 다음에 확인할 것
 - 배포 주소의 `/api/health`에서 `"kind":"upstash","ok":true` 확인, 최신 배포를 Production으로 지정.
